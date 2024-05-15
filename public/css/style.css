@@ -1,0 +1,44 @@
+header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1% 2%;
+    background-color: aliceblue;
+}
+
+footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    padding: 1% 2%;
+    background-color: aliceblue;
+}
+
+.logo, ul {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+ul {
+    list-style-type: none;
+}
+
+.login-register {
+    display: flex;
+    flex-direction: row;
+    padding: 5% 10%;
+    justify-content: space-between;
+    align-items: center;
+}
