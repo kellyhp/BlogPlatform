@@ -126,6 +126,8 @@ app.get('/post/:id', (req, res) => {
 });
 app.post('/posts', (req, res) => {
     // TODO: Add a new post and redirect to home
+    const { username } = req.body;
+    console.log('received');
 });
 app.post('/like/:id', (req, res) => {
     // TODO: Update post likes
@@ -137,11 +139,6 @@ app.post('/delete/:id', isAuthenticated, (req, res) => {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Support Functions and Variables
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-// Function to add a new user
-function addUser(username) {
-    // TODO: Create a new user object and add to users array
-}
 
 // Function to update post likes
 function updatePostLikes(req, res) {
@@ -259,13 +256,20 @@ function isAuthenticated(req, res, next) {
     }
 }
 
+function isAlreadyAuthenticated(req, res, next) {
+    if (req.session.userId) {
+        return res.redirect('/');
+    }
+    next();
+}
+
 // Register GET route is used for error response from registration
 //
-app.get('/register', (req, res) => {
+app.get('/register', isAlreadyAuthenticated, (req, res) => {
     res.render('loginRegister', { regError: req.query.error });
 });
 
-app.post('/register', (req, res) => {
+app.post('/register', isAlreadyAuthenticated, (req, res) => {
     const { username } = req.body;
     try {
         // TODO: Register a new user
@@ -280,31 +284,37 @@ app.post('/register', (req, res) => {
     }
 });
 
-// Function to register a new user
-function registerUser(username) {
-    if (findUserByUsername(username)) {
-        throw new Error('Username already exists');
-    }
+// Function to add a new user
+function addUser(username) {
+    // TODO: Create a new user object and add to users array
     const newUser = {
         id: users.length + 1,
         username: username,
-        avatar_url: undefined, //default for now
+        avatar_url: undefined, // default for now
         memberSince: new Date().toISOString()
     };
     users.push(newUser);
     return newUser;
 }
 
+// Function to register a new user
+function registerUser(username) {
+    if (findUserByUsername(username)) {
+        throw new Error('Username already exists');
+    }
+    return addUser(username);
+}
+
 // Login route GET route is used for error response from login
 //
-app.get('/login', (req, res) => {
+app.get('/login', isAlreadyAuthenticated,(req, res) => {
     res.render('loginRegister', { loginError: req.query.error });
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', isAlreadyAuthenticated,(req, res) => {
     // TODO: Login a user
     console.log("recevied post request");
-    const { username } = req.body;
+    const username = req.body;
     console.log("Received username: ", username);
     try {
         const user = loginUser(username);
@@ -340,7 +350,7 @@ app.get('/logout', (req, res) => {
 
 // Error route: render error page
 app.get('/error', (req, res) => {
-    res.render('error'); // havent made an error handlebar yet like omg page not found or oh error ahh
+    res.render('error'); // havent made an error handlebar yet like error page?
 });
 
 // Function to logout a user
