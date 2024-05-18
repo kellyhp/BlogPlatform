@@ -51,6 +51,13 @@ app.engine(
                 }
                 return options.inverse(this);
             },
+            isLoggedInAndOwner: function (postUser, options) {
+                let currUser = this.user.username;
+                if (postUser === currUser) {
+                    return options.fn(this);
+                }
+                return options.inverse(this);
+            }
         },
     })
 );
@@ -97,7 +104,7 @@ app.listen(PORT, () => {
 
 // Example data for posts and users
 let posts = [
-    { id: 1, title: 'Sample Post', content: 'This is a sample post.', username: 'SampleUser', timestamp: '2024-01-01 10:00', likes: 0 },
+    { id: 1, title: 'Sample Post', content: 'This is a sample post.', username: 'Jordan', timestamp: '2024-01-01 10:00', likes: 0 },
     { id: 2, title: 'Another Post', content: 'This is another sample post.', username: 'AnotherUser', timestamp: '2024-01-02 12:00', likes: 0 },
 ];
 let users = [
@@ -126,12 +133,41 @@ app.get('/post/:id', (req, res) => {
 });
 app.post('/posts', (req, res) => {
     // TODO: Add a new post and redirect to home
+    console.log(req.username);
+    let newContent = req.body.content;
+    let newTitle = req.body.title;
+    let postUser = getCurrentUser(req).username;
+    addPost(newTitle, newContent, postUser);
+    res.redirect('/');
 });
-app.post('/like/:id', (req, res) => {
+app.post('/like/:id', isAuthenticated, (req, res) => {
     // TODO: Update post likes
+    console.log(req.body.postId);
+    let likes = updatePostLikes(req.body.postId);
+    res.json({
+        status: 'success',
+        likeCounter: likes
+    }); 
 });
 app.post('/delete/:id', isAuthenticated, (req, res) => {
-    // TODO: Delete a post if the current user is the owner
+    // Delete a post if the current user is the owner
+    console.log(req.body.postId);
+    let deleteID = parseInt(req.body.postId);
+    console.log(deleteID);
+    // filters out the post to delete and recreates array
+    posts = posts.filter(element =>{
+        return element.id != deleteID;
+    })
+    // reindex all the IDs
+    let updateID = 1;
+    posts.forEach((element) => {
+        console.log("the new updateID is", updateID);
+        element.id = updateID;
+        updateID++;
+    })
+    res.json({
+        status: 'success',
+    }); 
 });
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -144,8 +180,11 @@ function addUser(username) {
 }
 
 // Function to update post likes
-function updatePostLikes(req, res) {
+function updatePostLikes(postID) {
     // TODO: Increment post likes if conditions are met
+    const likeID = postID- 1;
+    posts[likeID].likes++;
+    return posts[likeID].likes;
 }
 // Function to get all posts, sorted by latest first
 function getPosts() {
@@ -154,7 +193,15 @@ function getPosts() {
 
 // Function to add a new post
 function addPost(title, content, user) {
-    // TODO: Create a new post object and add to posts array
+    const newPost = {
+        id: posts.length + 1,
+        title: title,
+        content: content,
+        username: user,
+        timestamp: new Date().toISOString(),
+        likes: 0
+    }
+    posts.push(newPost);
 }
 
 
@@ -215,7 +262,7 @@ function handleAvatar(req, res) {
 }
 
 // Function to generate an image avatar
-function generateAvatar(letter, width = 100, height = 100) {
+function generateAvatar(letter, width = 40, height = 40) {
     // TODO: Generate an avatar image with a letter
     // Steps:
     // 1. Choose a color scheme based on the letter
