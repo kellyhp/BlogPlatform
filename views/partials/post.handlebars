@@ -1,30 +1,74 @@
 {{! Partial for a single post }}
 <div class="post">
     <div class="post-avatar">
-        <!-- the user's avatar -->
+        <img class="post-avatar-only" src="/avatar/{{user.username}}" alt="User Avatar">
     </div>
     <div class="post-content preserve-newlines">
         <!-- the post -->
+        <span class="spanTitle"> {{title}} </span>
+        <span class="spanContent">{{content}}</span>
         <div class="post-status-bar">
             <!-- everything that is shown in the status bar -->
             <!-- Heart = ♥ -->
             <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
+            <span>
+            {{#isLoggedInAndOwner username}}
+                <!--
+                    <form id="delete-post" action="/delete/:id" method="POST">
+                    <input type="hidden" name="trash" value="{{id}}">
+                    <button type="submit" class="delete-button"><i class="fa-solid fa-trash"></i></button>
+                </form>
+                -->
+                <i onclick="handleDeleteClick(event)" data-id="{{id}}" class="fa-solid fa-trash delete-button"></i>
+                {{else}}
+                    <!-- 
+                        <form id="like-post" action="/like/:id" method="POST">
+                            <input type="hidden" name="like" value="{{id}}">
+                            <button type="submit" class="like-button"><i class="fa-solid fa-heart"></i></button>
+                        </form>
+                    -->
+                    <i onclick="handleLikeClick(event)" data-id="{{id}}" class="fa-solid fa-heart like-button"></i>
+            {{/isLoggedInAndOwner}}
+            <span id="like-counter">{{likes}}</span> Likes </span>
+            <span>Posted By: {{username}} on {{timestamp}} </span>
         </div>        
     </div>
 </div>
 <script>
 
-    function handleLikeClick(event) {
+    // need it to be async to receive the response as a json
+    async function handleLikeClick(event) {
         const postId = event.target.getAttribute('data-id');
+        const likeCounterID = document.getElementById('like-counter');    
 
-        // you might want to "fetch" something...        
+            let response = await fetch('/like/:id', {
+            method: 'POST',
+            headers: {
+                    'Content-Type' : 'application/json'
+                },
+            body: JSON.stringify({postId : postId})
+        })
+            // wait for it to convert to json so we can use the response
+            let data = await response.json();
+            console.log(event.target);
+            event.target.classList.add('liked');
+            likeCounterID.textContent = data.likeCounter;
     }
 
-    function handleDeleteClick(event) {
+    async function handleDeleteClick(event) {
         const buttonElement = event.target.closest('.delete-button');
         const postId = buttonElement.getAttribute('data-id');        
 
-        // you might want to "fetch" something...        
-        
-    }    
+        // you might want to "fetch" something...  
+        let response =  await fetch('/delete/:id', {
+            method: 'POST',
+            headers: {
+                    'Content-Type' : 'application/json'
+                },
+            body: JSON.stringify({postId : postId})      
+        })
+        let data = await response.json();
+        console.log(data);
+        window.location.href = "/";
+    }
 </script>
