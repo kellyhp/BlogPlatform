@@ -1,21 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Mukta:wght@200;300;400;500;600;700;800&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+*{
+    font-family: "Outfit", sans-serif;
+}
+
+body {
+    background-color: #FDF8F8;
+}
+
 header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding: 1% 2%;
-    background-color: aliceblue;
+    background-color: #F9F4F1;
+    color: #C16265;
+    box-shadow: 0px 4px 10px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
 }
 
 footer {
     display: flex;
     justify-content: center;
     align-items: center;
-    position: absolute;
+    position: fixed;
     width: 100%;
     bottom: 0;
     padding: 1% 2%;
-    background-color: aliceblue;
+    background-color: #F9F4F1;
+    color: #C16265;
 }
 
 .logo, ul {
@@ -26,7 +42,7 @@ footer {
 
 a {
     text-decoration: none;
-    color: black;
+    color: #C16265;
     font-weight: 600;
     cursor: pointer;
 }
@@ -41,4 +57,103 @@ ul {
     padding: 5% 10%;
     justify-content: space-between;
     align-items: center;
+}
+
+h1 {
+    display: flex;
+    justify-content: center;
+}
+
+.create-post-header {
+    display: block;
+}
+
+#emoji-grid {
+    position: absolute;
+    width: 35%;
+}
+
+.create-post-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+textarea {
+    resize: none;
+    border: solid 1px rgb(173, 173, 173);
+    border-radius: 10px;
+    margin: 10px;
+}
+
+.post-content span {
+    display: block;
+    font-family: "Mukta", sans-serif;
+}
+
+.content-container {
+    display: grid;
+    grid-template-rows: auto;
+    grid-template-columns: auto auto auto;
+    padding: 30px;
+}
+
+.posts-list ul {
+    display: flex;
+    flex-direction: column;
+}
+
+.post {
+    border: solid 2px #C9DC7C;
+    border-radius: 20px;
+    color: #383838;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0px 4px 5px;
+    width: 100%;
+}
+
+.post-avatar-only {
+    box-shadow: 0px 4px 5px;
+    color: #a07575;
+}
+
+.post-button, .emoji-button {
+    background-color: #E9848F;
+    border-radius: 20px;
+    border: none;
+    width: 50%;
+    color: white;
+}
+
+.post-button {
+    width: 45%;
+}
+
+.emoji-button {
+    width: 10%;
+}
+
+.post-status-bar {
+    display: flex;
+    font-size: 15px;
+    padding: 10px 5px 10px 5px;
+    justify-content: space-between;
+    margin: 2px;
+    border-top: solid 2px rgb(173, 173, 173);
+}
+
+.like-button {
+    display: inline;
+    background-color: transparent;
+    color: rgb(85, 85, 85);
+    border: none;
+}
+
+.liked {
+    color: rgb(250, 77, 77);
+}
+
+#like-counter {
+    display: inline;
 }
