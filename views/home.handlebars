@@ -3,37 +3,41 @@
 
 {{! New Post Submission Form }}
 <section class="content-container">
-    {{#if loggedIn}}
+    <div class="gridItem1">
+        {{#if loggedIn}}
         <!-- show the create post form when logged in -->
         <section class="post-form">
             <!-- make a header here -->
+            <h1 class="create-post-header">Create new post!</h1>
             <form action="/posts" method="POST">
                 <!-- title input field name = "title" -->
                 <!-- text area input field name = "content" -->
-
-                <div class="form-actions">
-                    <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
-                    <button type="submit" class="post-button">Post</button>
+                <div class="create-post-container">
+                    <textarea id="post-title" cols="70" name="title" >Title</textarea>
+                    <textarea id="post-content" cols="70" rows="20" name="content">What's on your mind {{user.username}}?</textarea> 
                 </div>
+                <button type="button" class="emoji-button" onclick="toggleEmojiPanel()"><i class="fa-regular fa-face-smile"></i></button>
+                <button type="submit" class="post-button">Post</button>
             </form>
 
-            <div id="emoji-container" class="emoji-panel" style="display: none;">
+            <div id="emoji-container" class="emoji-panel">
                 <!-- input field for the emoji search, use oninput="searchEmojis() -->
                 <!-- a div, id = "emoji-grid" -->
+                <textarea id="emoji-search" cols="70" rows="1" name="filter-emojis" oninput="searchEmojis()">search for emojis...</textarea>
+                <div id="emoji-grid"></div>
             </div>
         </section>
     {{/if}}
+    </div>
 
-    <section class="posts-list">
+    <div class="gridItem2">
+        <h1>Recent Posts</h1>
+        <section class="posts-list">
         <!-- recent posts -->
-
-        <div>
-            ah
-        </div>
         {{#if posts.length}}
         <ul>
             {{#each posts}}
-                <!-- you have to pass the user in to posts and this is the syntax -->
+                
                 {{> post this user=../user}}            
             {{/each}}
         </ul>
@@ -41,6 +45,7 @@
             <p> no post for now </p>
         {{/if}}
     </section>
+    </div>
 </section>
 
 
@@ -57,12 +62,17 @@
 let allEmojis = [];  // Global list to hold all emojis
 
 function toggleEmojiPanel() {
-    const container = document.getElementById('emoji-container');
+    const container = document.getElementById('emoji-grid');
     container.style.display = container.style.display === 'none' ? 'block' : 'none';
 
 
     if(container.style.display === 'block' && allEmojis.length == 0){
-        // go "Fetch" you some emojis and show them off with displayEmojies
+        fetch('https://emoji-api.com/emojis?access_key=1025bc012266b6a5a3eecd2076d54d894e99eda4')
+            .then(res => res.json())
+            .then(data => {
+                allEmojis = data;
+                displayEmojis(data);
+            }) 
     }
 }
 
@@ -83,22 +93,28 @@ function displayEmojis(emojis,limit=200) {
     }
 }
 
+
 function searchEmojis() {
     const searchTerm = document.getElementById('emoji-search').value.toLowerCase();
     // array.filter takes a predicate
     // use string.includes. 
 
-    const filteredEmojis = allEmojis.filter(...);
+    const filteredEmojis = allEmojis.filter(emoji => {
+        return emoji.slug.includes(searchTerm)
+    });
     
     displayEmojis(filteredEmojis);
-}
+}   
+
 
 function insertEmoji(emoji) {
+    const postcontent = document.getElementById('post-content');
+    let previousPostContent = postcontent.value;
+
     // put an emoji on a form somehow. 
 
     // do this when you're doing getting the emoji on the form
-    //
+    postcontent.value = previousPostContent + emoji;
     textarea.focus();  // Keep focus on the textarea
 }
 </script>
-

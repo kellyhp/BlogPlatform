@@ -1,30 +1,94 @@
 {{! Partial for a single post }}
 <div class="post">
     <div class="post-avatar">
-        <!-- the user's avatar -->
+        <img class="post-avatar-only" src="/avatar/{{this.username}}" alt="User Avatar">
     </div>
     <div class="post-content preserve-newlines">
         <!-- the post -->
+        <span class="spanTitle"> {{this.title}} </span>
+        <span class="spanContent">{{this.content}}</span>
         <div class="post-status-bar">
             <!-- everything that is shown in the status bar -->
             <!-- Heart = ♥ -->
             <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
+            <span>
+            {{#isLoggedInAndOwner this.username}}
+                <!--
+                    <form id="delete-post" action="/delete/:id" method="POST">
+                    <input type="hidden" name="trash" value="{{id}}">
+                    <button type="submit" class="delete-button"><i class="fa-solid fa-trash"></i></button>
+                </form>
+                -->
+                <i onclick="handleDeleteClick(event)" data-id="{{this.id}}" class="fa-solid fa-trash delete-button"></i>
+                {{else}}
+                    <!-- 
+                        <form id="like-post" action="/like/:id" method="POST">
+                            <input type="hidden" name="like" value="{{id}}">
+                            <button type="submit" class="like-button"><i class="fa-solid fa-heart"></i></button>
+                        </form>
+                    -->
+                    <i onclick="handleLikeClick(event)" data-id="{{this.id}}" class="fa-solid fa-heart like-button"></i>
+            {{/isLoggedInAndOwner}}
+            <span id="like-counter">{{this.likes}}</span> Likes </span>
+            <span>Posted By: {{this.username}} on {{this.timestamp}} </span>
         </div>        
     </div>
 </div>
+
 <script>
+    // need it to be async to receive the response as a json
+    async function handleLikeClick(event) {
+        const buttonElement = event.target.closest('.like-button');
+        const postId = buttonElement.getAttribute('data-id');
+        const likeCounterID = buttonElement.closest('.post-status-bar').querySelector('#like-counter');    
 
-    function handleLikeClick(event) {
-        const postId = event.target.getAttribute('data-id');
+        try {
+            let response = await fetch(`/like/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ postId: postId })
+            });
 
-        // you might want to "fetch" something...        
+            let data = await response.json();
+            console.log(data);
+
+            if (data.status === 'success') {
+                buttonElement.classList.add('liked');
+                likeCounterID.textContent = data.likeCounter;
+            } else {
+                console.error(data.message);
+                // Optionally, display an error message to the user
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
 
-    function handleDeleteClick(event) {
+    async function handleDeleteClick(event) {
         const buttonElement = event.target.closest('.delete-button');
         const postId = buttonElement.getAttribute('data-id');        
 
-        // you might want to "fetch" something...        
-        
-    }    
+        try {
+            let response = await fetch(`/delete/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ postId: postId })
+            });
+            // wait for it to convert to json so we can use the response
+            let data = await response.json();
+            console.log(data);
+
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                console.error('Failed to delete post');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
 </script>
