@@ -23,11 +23,48 @@
     {{#if user.posts.length}}
         <ul>
             {{#each user.posts}}
-                {{> post this}}
+                <li>
+                    <div class="post-avatar">
+                        <img src="/avatar/{{this.username}}" alt="{{this.username}}'s Avatar">
+                    </div>
+                    <div class="post-content">
+                        <a href="/post/{{this.id}}">{{this.title}}</a>
+                        <p>{{this.content}}</p>
+                        <p>Posted on: {{this.timestamp}}</p>
+                        <p> {{this.likes}} likes </p>
+                    </div>
+                    <i onclick="handleDeleteClick(event)" data-id="{{this.id}}" class="fa-solid fa-trash delete-button"></i>
+                </li>
             {{/each}}
         </ul>
     {{else}}
-        <!-- fix this up with some helper functions and other handlebars expressions, or add you own character -->
-        <p>You have not posted yet, poster.</p>
+        <p>You have not posted yet.</p>
     {{/if}}
 </section>
+
+<script>
+    async function handleDeleteClick(event) {
+        const buttonElement = event.target.closest('.delete-button');
+        const postId = buttonElement.getAttribute('data-id');
+
+        try {
+            let response = await fetch(`/delete/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ postId: postId })
+            });
+
+            let data = await response.json();
+
+            if (data.status === 'success') {
+                window.location.reload();
+            } else {
+                console.error('Failed to delete post');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+</script>
