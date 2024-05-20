@@ -360,28 +360,20 @@ function isAuthenticated(req, res, next) {
     }
 }
 
-function isAlreadyAuthenticated(req, res, next) {
-    if (req.session.userId) {
-        return res.redirect('/');
-    }
-    next();
-}
-
 // Register GET route is used for error response from registration
 //
-app.get('/register',  isAlreadyAuthenticated, (req, res) => {
+app.get('/register', (req, res) => {
     res.render('loginRegister', { regError: req.query.error });
 });
 
-app.post('/register',  isAlreadyAuthenticated, (req, res) => {
+app.post('/register', (req, res) => {
     const { username } = req.body;
     try {
         // TODO: Register a new user
         const newUser = registerUser(username);
         console.log('New user registered:', newUser);
-        req.session.loggedIn = true;
-        req.session.userId = newUser.id;
-        res.redirect('/');
+        console.log("redirecting");
+        res.redirect('/login');
     } catch (error) {
         console.error('Error registering user:', error.message);
         res.redirect('/register?error=' + encodeURIComponent(error.message));
@@ -411,11 +403,11 @@ function addUser(username) {
 
 // Login route GET route is used for error response from login
 //
-app.get('/login',  isAlreadyAuthenticated, (req, res) => {
+app.get('/login', (req, res) => {
     res.render('loginRegister', { loginError: req.query.error });
 });
 
-app.post('/login',  isAlreadyAuthenticated, (req, res) => {
+app.post('/login', (req, res) => {
     // TODO: Login a user
     console.log("recevied post request");
     const { username } = req.body;
