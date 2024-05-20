@@ -66,9 +66,15 @@ h1 {
     justify-content: center;
 }
 
-.avatar {
+.avatar-navbar{
     width: 40px;
     height: 40px;
+    border-radius: 10px;
+}
+
+.avatar {
+    width: 60px;
+    height: 60px;
     border-radius: 10px;
 }
 
@@ -212,7 +218,12 @@ textarea {
     padding: 0 10%;
 }
 
-.user-posts h2{
+.user-posts ul {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-posts h2, .not-posted{
     text-align: center;
 }
 
@@ -265,9 +276,6 @@ textarea {
         display: flex;
         flex-direction: column;
         align-items: center;
-    }
-    .not-posted {
-        text-align: center;
     }
     .login-register {
         gap: 50px;
