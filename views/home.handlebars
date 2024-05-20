@@ -13,8 +13,8 @@
                 <!-- title input field name = "title" -->
                 <!-- text area input field name = "content" -->
                 <div class="create-post-container">
-                    <textarea id="post-title" cols="70" name="title" >Title</textarea>
-                    <textarea id="post-content" cols="70" rows="20" name="content">What's on your mind {{user.username}}?</textarea> 
+                    <textarea id="post-title" cols="60" name="title" >Title</textarea>
+                    <textarea id="post-content" cols="60" rows="20" name="content">What's on your mind {{user.username}}?</textarea> 
                 </div>
                 <button type="button" class="emoji-button" onclick="toggleEmojiPanel()"><i class="fa-regular fa-face-smile"></i></button>
                 <button type="submit" class="post-button">Post</button>
@@ -23,7 +23,7 @@
             <div id="emoji-container" class="emoji-panel">
                 <!-- input field for the emoji search, use oninput="searchEmojis() -->
                 <!-- a div, id = "emoji-grid" -->
-                <textarea id="emoji-search" cols="70" rows="1" name="filter-emojis" oninput="searchEmojis()">search for emojis...</textarea>
+                <textarea id="emoji-search" cols="60" rows="1" name="filter-emojis" oninput="searchEmojis()">search for emojis...</textarea>
                 <div id="emoji-grid"></div>
             </div>
         </section>

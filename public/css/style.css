@@ -50,6 +50,7 @@ a {
 
 ul {
     list-style-type: none;
+    padding-inline-start: 0px !important;
 }
 
 .login-register {
@@ -63,6 +64,12 @@ ul {
 h1 {
     display: flex;
     justify-content: center;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
 }
 
 .create-post-header {
@@ -85,6 +92,7 @@ textarea {
     border: solid 1px rgb(173, 173, 173);
     border-radius: 10px;
     margin: 10px;
+    font-size: 1rem;
 }
 
 .post-content span {
@@ -104,7 +112,7 @@ textarea {
     flex-direction: column;
 }
 
-.post {
+.post , .post-profile, .profile-info{
     border: solid 2px #C9DC7C;
     border-radius: 20px;
     color: #383838;
@@ -114,9 +122,39 @@ textarea {
     width: 100%;
 }
 
+.login-area, .register-area {
+    border: solid 2px #C9DC7C;
+    border-radius: 20px;
+    color: #383838;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0px 4px 5px;
+}
+
+.button-auth {
+    border-radius: 10px;
+    background-color: #a07575;
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 2% 5%;
+    margin-top: 50px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.input-auth {
+    border: solid 1px #383838;
+    border-radius: 10px;
+    height: 30px;
+    font-size: 1rem;
+}
+
 .post-avatar-only {
     box-shadow: 0px 4px 5px;
     color: #a07575;
+    max-width: fit-content;
+    max-height: fit-content;
 }
 
 .post-button, .emoji-button {
@@ -149,6 +187,7 @@ textarea {
     background-color: transparent;
     color: rgb(85, 85, 85);
     border: none;
+    cursor: pointer;
 }
 
 .liked {
@@ -157,4 +196,91 @@ textarea {
 
 #like-counter {
     display: inline;
+}
+
+.delete-button-profile{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.user-posts{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 10%;
+}
+
+.user-posts h2{
+    text-align: center;
+}
+
+.profile-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    width: 150px;
+    height: 150px;
+    padding: 5%;
+}
+
+.post-profile{
+    display: flex;
+    flex-direction: row;
+    gap: 5%;
+}
+
+.post-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.bold{
+    font-weight: 600;
+}
+
+.profile-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 5% 10%;
+}
+
+.profile-info {
+    width: 40%;
+}
+
+@media(max-width: 782px) {
+    header {
+        flex-direction: column;
+    }
+    .profile-container {
+        align-items: center;
+        flex-direction: column;
+    }
+    .content-container, .login-register {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .not-posted {
+        text-align: center;
+    }
+    .login-register {
+        gap: 50px;
+    }
+}
+
+@media(max-width: 1024px) {
+    .content-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .create-post-header {
+        text-align: center;
+    }
 }
