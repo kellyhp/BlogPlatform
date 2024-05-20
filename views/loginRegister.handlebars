@@ -10,12 +10,12 @@
         {{/if}}
         <form action="/login" method="POST">
             <label for="regUsername">Username:</label><br>
-            <input type="text" id="regUsername" name="username"><br>
-            <button type="submit">Login</button>
+            <input class="input-auth" type="text" id="regUsername" name="username"><br>
+            <button class="button-auth" type="submit">Login</button>
         </form>
     </section>
 
-    <!-- say --OR-- ... with style -->
+    <div class="bold"> -OR- </div>
 
     <section class = "register-area">
         <h2>Register</h2>
@@ -25,8 +25,8 @@
         {{/if}}
         <form action="/register" method="POST">
             <label for="regUsername">Username:</label><br>
-            <input type="text" id="regUsername" name="username"><br>
-            <button type="submit">Register</button>
+            <input class="input-auth"  type="text" id="regUsername" name="username"><br>
+            <button class="button-auth" type="submit">Register</button>
         </form>
     </section>
 </section>

@@ -316,7 +316,7 @@ function handleAvatar(req, res) {
 }
 
 // Function to generate an image avatar
-function generateAvatar(letter, width = 40, height = 40) {
+function generateAvatar(letter, width = 100, height = 100) {
     // TODO: Generate an avatar image with a letter
     // Steps:
     // 1. Choose a color scheme based on the letter
