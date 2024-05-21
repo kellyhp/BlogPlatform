@@ -1,37 +1,24 @@
 {{! Partial for a single post }}
 <div class="post">
     <div class="post-avatar">
-        <img class="avatar" class="post-avatar-only" src="/avatar/{{this.username}}" alt="User Avatar">
+        <img class="avatar post-avatar-only" src="/avatar/{{this.username}}" alt="User Avatar">
     </div>
     <div class="post-content preserve-newlines">
         <!-- the post -->
-        <span class="spanTitle"> {{this.title}} </span>
-        <span class="spanContent">{{this.content}}</span>
+        <a class="spanTitle" href="/post/{{this.id}}">{{this.title}}</a>
+        <p class="spanContent">{{this.content}}</p>
         <div class="post-status-bar">
             <!-- everything that is shown in the status bar -->
             <!-- Heart = ♥ -->
-            <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
-            <span>
+            <!-- font awesome trashcan = <i class="fas fa-trash-alt"> </i>-->
             {{#isLoggedInAndOwner this.username}}
-                <!--
-                    <form id="delete-post" action="/delete/:id" method="POST">
-                    <input type="hidden" name="trash" value="{{id}}">
-                    <button type="submit" class="delete-button"><i class="fa-solid fa-trash"></i></button>
-                </form>
-                -->
                 <i onclick="handleDeleteClick(event)" data-id="{{this.id}}" class="fa-solid fa-trash delete-button"></i>
-                {{else}}
-                    <!-- 
-                        <form id="like-post" action="/like/:id" method="POST">
-                            <input type="hidden" name="like" value="{{id}}">
-                            <button type="submit" class="like-button"><i class="fa-solid fa-heart"></i></button>
-                        </form>
-                    -->
-                    <i onclick="handleLikeClick(event)" data-id="{{this.id}}" class="fa-solid fa-heart like-button"></i>
+            {{else}}
+                <i onclick="handleLikeClick(event)" data-id="{{this.id}}" class="fa-solid fa-heart like-button"></i>
             {{/isLoggedInAndOwner}}
-            <span id="like-counter">{{this.likes}}</span> Likes </span>
-            <span>Posted By: {{this.username}} on {{this.timestamp}} </span>
-        </div>        
+            <p id="like-counter-{{this.id}}"> {{this.likes}} likes </p>
+            <p>Posted By: {{this.username}} on {{this.timestamp}}</p>
+        </div>
     </div>
 </div>
 
@@ -40,7 +27,7 @@
     async function handleLikeClick(event) {
         const buttonElement = event.target.closest('.like-button');
         const postId = buttonElement.getAttribute('data-id');
-        const likeCounterID = buttonElement.closest('.post-status-bar').querySelector('#like-counter');    
+        const likeCounterID = buttonElement.closest('.post-status-bar').querySelector(`#like-counter-${postId}`);
 
         try {
             let response = await fetch(`/like/${postId}`, {
@@ -56,7 +43,7 @@
 
             if (data.status === 'success') {
                 buttonElement.classList.add('liked');
-                likeCounterID.textContent = data.likeCounter;
+                likeCounterID.textContent = `${data.likeCounter} likes`;
             } else {
                 console.error(data.message);
                 // Optionally, display an error message to the user

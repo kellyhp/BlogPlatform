@@ -3,6 +3,9 @@ const expressHandlebars = require('express-handlebars');
 const session = require('express-session');
 const { createCanvas, loadImage } = require('canvas');
 
+require('dotenv').config();
+const accessToken = process.env.EMOJI_API_KEY;
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -124,7 +127,7 @@ let users = [
 app.get('/', (req, res) => {
     const posts = getPosts();
     const user = getCurrentUser(req) || {};
-    res.render('home', { posts, user });
+    res.render('home', { posts, user, accessToken });
 });
 
 // Additional routes that you must implement
@@ -311,7 +314,6 @@ function handleAvatar(req, res) {
     const { username } = req.params;
     const avatar = generateAvatar(username.charAt(0));
     res.set('Content-Type', 'image/png');
-    console.log('image_generated')
     res.send(avatar);
 }
 

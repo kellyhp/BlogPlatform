@@ -13,17 +13,19 @@
                 <!-- title input field name = "title" -->
                 <!-- text area input field name = "content" -->
                 <div class="create-post-container">
-                    <textarea id="post-title" cols="60" name="title" >Title</textarea>
-                    <textarea id="post-content" cols="60" rows="20" name="content">What's on your mind {{user.username}}?</textarea> 
+                    <textarea id="post-title" cols="50" name="title" >Title</textarea>
+                    <textarea id="post-content" cols="50" rows="20" name="content">What's on your mind {{user.username}}?</textarea> 
                 </div>
-                <button type="button" class="emoji-button" onclick="toggleEmojiPanel()"><i class="fa-regular fa-face-smile"></i></button>
-                <button type="submit" class="post-button">Post</button>
+                <div class="button-row">
+                    <button type="button" class="emoji-button" onclick="toggleEmojiPanel()"><i class="fa-regular fa-face-smile"></i></button>
+                    <button type="submit" class="post-button">Post</button>
+                </div>
             </form>
 
             <div id="emoji-container" class="emoji-panel">
                 <!-- input field for the emoji search, use oninput="searchEmojis() -->
                 <!-- a div, id = "emoji-grid" -->
-                <textarea id="emoji-search" cols="60" rows="1" name="filter-emojis" oninput="searchEmojis()">search for emojis...</textarea>
+                <textarea id="emoji-search" cols="50" rows="1" name="filter-emojis" oninput="searchEmojis()">search for emojis...</textarea>
                 <div id="emoji-grid"></div>
             </div>
         </section>
@@ -62,29 +64,30 @@
 let allEmojis = [];  // Global list to hold all emojis
 
 function toggleEmojiPanel() {
-    const container = document.getElementById('emoji-grid');
-    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    const container = document.getElementById('emoji-container');
+    const displayStyle = container.style.display;
 
-
-    if(container.style.display === 'block' && allEmojis.length == 0){
-        fetch('https://emoji-api.com/emojis?access_key=1025bc012266b6a5a3eecd2076d54d894e99eda4')
-            .then(res => res.json())
-            .then(data => {
-                allEmojis = data;
-                displayEmojis(data);
-            }) 
+    if (displayStyle === 'none' || displayStyle === '') {
+        container.style.display = 'block';
+        fetch(`https://emoji-api.com/emojis?access_key=${accessToken}`)
+                .then(res => res.json())
+                .then(data => {
+                    allEmojis = data;
+                    displayEmojis(data);
+                })
+                .catch(error => console.error('Error fetching emojis:', error));
+    } else {
+        container.style.display = 'none';
     }
 }
 
-function displayEmojis(emojis,limit=200) {
+function displayEmojis(emojis, limit = 200) {
     const container = document.getElementById('emoji-grid');
-    container.innerHTML = '';  // Clear previous results
+    container.innerHTML = '';
     if (Array.isArray(emojis) && emojis.length > 0) {
         emojis.slice(0, limit).forEach(emoji => {
             const emojiElement = document.createElement('span');
             emojiElement.textContent = emoji.character;
-            emojiElement.title = emoji.slug;  // Showing the emoji name on hover
-            emojiElement.style.cursor = 'pointer';
             emojiElement.onclick = () => insertEmoji(emoji.character);
             container.appendChild(emojiElement);
         });
@@ -93,28 +96,15 @@ function displayEmojis(emojis,limit=200) {
     }
 }
 
-
 function searchEmojis() {
     const searchTerm = document.getElementById('emoji-search').value.toLowerCase();
-    // array.filter takes a predicate
-    // use string.includes. 
-
-    const filteredEmojis = allEmojis.filter(emoji => {
-        return emoji.slug.includes(searchTerm)
-    });
-    
+    const filteredEmojis = allEmojis.filter(emoji => emoji.slug.includes(searchTerm));
     displayEmojis(filteredEmojis);
-}   
-
+}
 
 function insertEmoji(emoji) {
     const postcontent = document.getElementById('post-content');
-    let previousPostContent = postcontent.value;
-
-    // put an emoji on a form somehow. 
-
-    // do this when you're doing getting the emoji on the form
-    postcontent.value = previousPostContent + emoji;
-    textarea.focus();  // Keep focus on the textarea
+    postcontent.value += emoji;
+    postcontent.focus();
 }
 </script>

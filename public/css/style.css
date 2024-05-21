@@ -39,6 +39,7 @@ footer {
     display: flex;
     flex-direction: row;
     gap: 15px;
+    align-items: center;
 }
 
 a {
@@ -78,11 +79,18 @@ h1 {
     border-radius: 10px;
 }
 
+.post-form{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
 .create-post-header {
     display: block;
 }
 
 #emoji-grid {
+    margin-bottom: 200px;
     position: absolute;
     width: 35%;
 }
@@ -97,7 +105,7 @@ textarea {
     resize: none;
     border: solid 1px rgb(173, 173, 173);
     border-radius: 10px;
-    margin: 10px;
+    margin-bottom: 10px;
     font-size: 1rem;
 }
 
@@ -118,7 +126,7 @@ textarea {
     flex-direction: column;
 }
 
-.post , .post-profile, .profile-info{
+.post, .profile-info{
     border: solid 2px #C9DC7C;
     border-radius: 20px;
     color: #383838;
@@ -139,7 +147,7 @@ textarea {
 
 .button-auth {
     border-radius: 10px;
-    background-color: #a07575;
+    background-color: #E9848F;
     color: white;
     border: none;
     width: 100%;
@@ -163,20 +171,37 @@ textarea {
     max-height: fit-content;
 }
 
+.button-row {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
 .post-button, .emoji-button {
     background-color: #E9848F;
     border-radius: 20px;
     border: none;
     width: 50%;
     color: white;
+    cursor: pointer;
+    padding: 2% 5%;
+    font-size: 1rem;
 }
 
 .post-button {
     width: 45%;
 }
 
+#emoji-container {
+    display: none;
+    margin-top: 20px;
+}
+
 .emoji-button {
-    width: 10%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 10%;
 }
 
 .post-status-bar {
@@ -188,27 +213,25 @@ textarea {
     border-top: solid 2px rgb(173, 173, 173);
 }
 
-.like-button {
-    display: inline;
-    background-color: transparent;
-    color: rgb(85, 85, 85);
-    border: none;
-    cursor: pointer;
-}
-
 .liked {
-    color: rgb(250, 77, 77);
+    color: rgb(250, 77, 77) !important;
 }
 
 #like-counter {
     display: inline;
 }
 
-.delete-button-profile{
+.delete-button, .like-button{
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
+}
+
+.like-button {
+    background-color: transparent;
+    color: rgb(85, 85, 85);
+    border: none;
 }
 
 .user-posts{
@@ -237,7 +260,7 @@ textarea {
     padding: 5%;
 }
 
-.post-profile{
+.post{
     display: flex;
     flex-direction: row;
     gap: 5%;
@@ -262,6 +285,11 @@ textarea {
 
 .profile-info {
     width: 40%;
+}
+
+.gridItem1{
+    display: flex;
+    flex-direction: column;
 }
 
 @media(max-width: 782px) {
@@ -290,5 +318,8 @@ textarea {
     }
     .create-post-header {
         text-align: center;
+    }
+    #emoji-grid{
+        width: 75%;
     }
 }
