@@ -1,32 +1,16 @@
 {{! Use the main layout }}
 {{!< main }}
 
-<section class="login-register">
+<section class="login">
     <section class = "login-area">
-        <h2>Login</h2>
+        <h2>Login with Google</h2>
         <!-- errors will appear here -->
         {{#if loginError}}
             <p style="color: red;">{{loginError}}</p>
         {{/if}}
-        <form action="/login" method="POST">
-            <label for="regUsername">Username:</label><br>
-            <input class="input-auth" type="text" id="regUsername" name="username"><br>
-            <button class="button-auth" type="submit">Login</button>
+        <form action="/google" method="GET">
+            <!-- <label for="regUsername"></label><br>
+            <input class="input-auth" type="text" id="regUsername" name="username"><br> -->
+            <button class="button-auth" type="submit">Login with Google</button>
         </form>
     </section>
-
-    <div class="bold"> -OR- </div>
-
-    <section class = "register-area">
-        <h2>Register</h2>
-        <!-- errors will appear here -->
-        {{#if regError}}
-            <p style="color: red;">{{regError}}</p>
-        {{/if}}
-        <form action="/register" method="POST">
-            <label for="regUsername">Username:</label><br>
-            <input class="input-auth"  type="text" id="regUsername" name="username"><br>
-            <button class="button-auth" type="submit">Register</button>
-        </form>
-    </section>
-</section>
