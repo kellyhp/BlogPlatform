@@ -21,9 +21,9 @@
     <h2>Your {{{postNeoType}}}s</h2>
     
     <!-- you'll need to make this conditaionl and #each expression work -->
-    {{#if user.posts.length}}
+    {{#if currUser.length}}
         <ul>
-            {{#each user.posts}}
+            {{#each currUser}}
                 <li class="post">
                     <div class="post-avatar">
                         <img class="avatar" src="/avatar/{{this.username}}" alt="{{this.username}}'s Avatar">
