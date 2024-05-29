@@ -54,7 +54,7 @@ ul {
     padding-inline-start: 0px !important;
 }
 
-.login, .register{
+.login, .registerUsername{
     display: flex;
     flex-direction: row;
     padding: 5% 10%;
@@ -357,12 +357,12 @@ select {
         align-items: center;
         flex-direction: column;
     }
-    .content-container, .login, .register {
+    .content-container, .login, .registerUsername {
         display: flex;
         flex-direction: column;
         align-items: center;
     }
-    .login, .register {
+    .login, .registerUsername {
         gap: 50px;
     }
     .gridItem1, .gridItem2 {
