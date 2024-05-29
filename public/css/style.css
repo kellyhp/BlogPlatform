@@ -332,8 +332,12 @@ textarea {
     width: 100%;
 }
 
-#post-title, #post-content, #emoji-search {
+#post-title, #post-content {
     width: 100%;
+}
+
+#emoji-search {
+    width: 80%;
 }
 
 select {
@@ -378,9 +382,6 @@ select {
     .span-desc{
         display: flex;
         flex-direction: column;
-    }
-    #emoji-grid {
-        width: 100%
     }
     .post-form form {
         width: 100%;

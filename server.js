@@ -175,7 +175,7 @@ app.get('/', async (req, res) => {
     const sort = req.query.sort || 'recency';
     const posts = await getPosts(req, sort);
     const user = await getCurrentUser(req) || {};
-    res.render('home', { posts, user });
+    res.render('home', { posts, user, accessToken });
 });
 
 // Additional routes that you must implement
