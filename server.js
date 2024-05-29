@@ -54,8 +54,8 @@ const PORT = 3000;
 
 // function: setting up the database
 async function getDBConnection () {
-    console.log("Does file exist?", fs.existsSync('your_database_file.db'));
-    if (!fs.existsSync('your_database_file.db')) {
+    console.log("Does file exist?", fs.existsSync('microblog.db'));
+    if (!fs.existsSync('microblog.db')) {
         await initializeDB();
         console.log("doing initializeDB")
     } else {
@@ -63,7 +63,7 @@ async function getDBConnection () {
     }
     await showDatabaseContents();
     db = await sqlite.open({
-        filename: 'your_database_file.db',
+        filename: 'microblog.db',
         driver: sqlite3.Database
     });
     app.locals.db = db; 
@@ -172,24 +172,13 @@ activateServer();
 // template
 //
 app.get('/', async (req, res) => {
-    const posts = await getPosts();
+    const sort = req.query.sort || 'recency';
+    const posts = await getPosts(req, sort);
     const user = await getCurrentUser(req) || {};
-    res.render('home', { posts, user, accessToken });
+    res.render('home', { posts, user });
 });
 
 // Additional routes that you must implement
-
-app.get('/post/:id', (req, res) => {
-    // TODO: Render post detail page
-    const postId = parseInt(req.params.id, 10);
-    const post = posts.find(post => post.id === postId);
-    if (post) {
-        res.render('postDetail', { post });
-    } else {
-        res.status(404).send('Post not found');
-    }
-});
-
 
 app.post('/posts', async (req, res) => {
     // TODO: Add a new post and redirect to home
@@ -201,25 +190,23 @@ app.post('/posts', async (req, res) => {
     res.redirect('/');
 });
 
-app.post('/like/:id', isAuthenticated, (req, res) => {
-    // TODO: Update post likes
+app.post('/like/:id', isAuthenticated, async (req, res) => {
     const postID = parseInt(req.params.id);
-    const currentUser = getCurrentUser(req);
-
-    const result = updatePostLikes(postID, currentUser.username);
-    if (result.likes !== undefined) {
+    const currentUser = await getCurrentUser(req);
+    try {
+        const result = await updatePostLikes(postID, currentUser.id);
         res.json({
             status: 'success',
+            action: result.action,
             likeCounter: result.likes
         });
-    } else {
+    } catch (error) {
         res.json({
             status: 'error',
-            message: result.error
+            message: error.message
         });
     }
 });
-
 
 app.post('/delete/:id', isAuthenticated, async (req, res) => {
     // Delete a post if the current user is the owner
@@ -247,52 +234,48 @@ app.post('/delete/:id', isAuthenticated, async (req, res) => {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Function to update post likes
-function updatePostLikes(postID, username) {
-    // TODO: Increment post likes if conditions are met
-    // Find the user by username
-    const user = findUserByUsername(username);
-    // If user exists
-    if (user) {
-        // Check if likedPosts array exists in the user object
-        if (!user.likedPosts) {
-            user.likedPosts = [];
-        }
-        // Find the post by postID
-        const postIndex = posts.findIndex(post => post.id === postID);
-        
-        // If the post exists
-        if (postIndex !== -1) {
-            const post = posts[postIndex];
-
-            // Check if the post is liked by the user
-            const alreadyLiked = user.likedPosts.includes(postID);
-
-            if (!alreadyLiked) {
-                // If the post is not already liked, like it
-                post.likes++;
-                user.likedPosts.push(postID);
-                return { action: 'liked', likes: post.likes };
-            } else {
-                // If the post is already liked, unlike it
-                post.likes--;
-                user.likedPosts = user.likedPosts.filter(id => id !== postID);
-                return { action: 'unliked', likes: post.likes };
-            }
-        } 
+async function updatePostLikes(postID, userID) {
+    const likeExists = await db.get('SELECT * FROM likes WHERE post_id = ? AND user_id = ?', [postID, userID]);
+    if (!likeExists) {
+        await db.run('INSERT INTO likes (user_id, post_id) VALUES (?, ?)', [userID, postID]);
+        await db.run('UPDATE posts SET likes = likes + 1 WHERE id = ?', [postID]);
+        const updatedPost = await db.get('SELECT likes FROM posts WHERE id = ?', [postID]);
+        return { action: 'liked', likes: updatedPost.likes };
+    } else {
+        await db.run('DELETE FROM likes WHERE post_id = ? AND user_id = ?', [postID, userID]);
+        await db.run('UPDATE posts SET likes = likes - 1 WHERE id = ?', [postID]);
+        const updatedPost = await db.get('SELECT likes FROM posts WHERE id = ?', [postID]);
+        return { action: 'unliked', likes: updatedPost.likes };
     }
 }
 
-
-
 // Function to get all posts, sorted by latest first
-async function getPosts() {
-    // return posts.slice().reverse();
-    try {
-        let gotPosts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
-        return gotPosts;
-    } catch (error) {
-        console.log("there was an error in the getPosts");
+async function getPosts(req, sort = 'recency') {
+    let posts;
+
+    if (sort === 'likes') {
+        posts = await db.all(`
+            SELECT posts.*, COUNT(likes.post_id) AS likesCount
+            FROM posts
+            LEFT JOIN likes ON posts.id = likes.post_id
+            GROUP BY posts.id
+            ORDER BY likesCount DESC
+        `);
+    } else {
+        posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
     }
+
+    const currentUser = await getCurrentUser(req);
+
+    if (currentUser) {
+        const userLikes = await db.all('SELECT post_id FROM likes WHERE user_id = ?', [currentUser.id]);
+        const likedPostIds = userLikes.map(like => like.post_id);
+        posts.forEach(post => {
+            post.likedByCurrentUser = likedPostIds.includes(post.id);
+        });
+    }
+
+    return posts;
 }
 
 // Function to add a new post
@@ -422,7 +405,7 @@ function isAuthenticated(req, res, next) {
 // Register GET route is used for error response from registration
 //
 
-app.post('/register', async (req, res) => {
+app.post('/registerUsername', async (req, res) => {
     let username = req.body.username;
     let googleID = req.body.googleID;
     try {
@@ -433,7 +416,7 @@ app.post('/register', async (req, res) => {
         res.redirect('/login');
     } catch (error) {
         console.error('Error registering user:', error.message);
-        res.redirect('/register?error=' + encodeURIComponent(error.message));
+        res.redirect('/registerUsername?error=' + encodeURIComponent(error.message));
     }
 });
 
@@ -492,8 +475,8 @@ app.get('/login', (req, res) => {
     }
 }); */
 
-app.get('/register', (req, res) => {
-    res.render('register', { loginError: req.query.error });
+app.get('/registerUsername', (req, res) => {
+    res.render('registerUsername', { loginError: req.query.error });
 });
 
 app.get('/google', passport.authenticate('google', {
@@ -508,7 +491,7 @@ app.get('/auth/google/callback', passport.authenticate('google'), async (req, re
     // otherwise prompt them to make a new username
     let checkFirstTime = await db.get('SELECT * FROM users WHERE hashedGoogleId = ?', [googleID]);
     if (!checkFirstTime) {
-        res.render('register', { googleID, regError: req.query.error });
+        res.render('registerUsername', { googleID, regError: req.query.error });
     } else { 
         // logging in (basically the original login code, but looking up username via the googleID)
         // maybe one day i'll make this a function...
@@ -555,7 +538,7 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/googleLogout', (req, res) => {
-    res.render('loggedOut');
+    res.render('googleLogout');
 })
 
 // Error route: render error page

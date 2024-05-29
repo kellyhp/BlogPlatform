@@ -32,9 +32,13 @@
                         <a  class="spanTitle" href="/post/{{this.id}}">{{this.title}}</a>
                         <p class="spanContent">{{this.content}}</p>
                         <div class="post-status-bar">
-                            <i onclick="handleDeleteClick(event)" data-id="{{this.id}}" class="fa-solid fa-trash delete-button"></i>
-                            <p id="like-counter"> {{this.likes}} likes </p>
-                            <p>Posted By: {{this.username}} on {{this.timestamp}}</p>
+                            <div class="span-desc">
+                                <div class="like-delete">
+                                    <i onclick="handleDeleteClick(event)" data-id="{{this.id}}" class="fa-solid fa-trash delete-button"></i>
+                                    <p id="like-counter-{{this.id}}"> {{this.likes}} likes </p>
+                                </div>
+                                <p>Posted By: {{this.username}} on {{this.timestamp}}</p>
+                            </div>
                         </div>
                     </div>
                 </li>

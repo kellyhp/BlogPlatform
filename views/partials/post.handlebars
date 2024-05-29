@@ -9,44 +9,42 @@
         <p class="spanContent">{{this.content}}</p>
         <div class="post-status-bar">
             <!-- everything that is shown in the status bar -->
-            <!-- Heart = ♥ -->
-            <!-- font awesome trashcan = <i class="fas fa-trash-alt"> </i>-->
-            {{#isLoggedInAndOwner this.username}}
+            <div class="span-desc">
+                <div class="like-delete">
+                {{#isLoggedInAndOwner this.username}}
                 <i onclick="handleDeleteClick(event)" data-id="{{this.id}}" class="fa-solid fa-trash delete-button"></i>
-            {{else}}
-                <i onclick="handleLikeClick(event)" data-id="{{this.id}}" class="fa-solid fa-heart like-button"></i>
-            {{/isLoggedInAndOwner}}
-            <p id="like-counter-{{this.id}}"> {{this.likes}} likes </p>
-            <p>Posted By: {{this.username}} on {{this.timestamp}}</p>
+                {{else}}
+                    <i onclick="handleLikeClick(event)" data-id="{{this.id}}" class="fa-solid fa-heart like-button {{#if this.likedByCurrentUser}}liked{{/if}}"></i>
+                {{/isLoggedInAndOwner}}
+                    <p id="like-counter-{{this.id}}">{{this.likes}} likes</p>
+                </div>
+                <p>Posted By: {{this.username}} on {{this.timestamp}}</p>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // need it to be async to receive the response as a json
     async function handleLikeClick(event) {
         const buttonElement = event.target.closest('.like-button');
         const postId = buttonElement.getAttribute('data-id');
-        const likeCounterID = buttonElement.closest('.post-status-bar').querySelector(`#like-counter-${postId}`);
+        const likeCounterID = document.querySelector(`#like-counter-${postId}`);
 
         try {
             let response = await fetch(`/like/${postId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ postId: postId })
+                }
             });
 
             let data = await response.json();
-            console.log(data);
 
             if (data.status === 'success') {
-                buttonElement.classList.add('liked');
+                buttonElement.classList.toggle('liked', data.action === 'liked');
                 likeCounterID.textContent = `${data.likeCounter} likes`;
             } else {
                 console.error(data.message);
-                // Optionally, display an error message to the user
             }
         } catch (error) {
             console.error('Error:', error);
@@ -62,12 +60,10 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ postId: postId })
+                }
             });
-            // wait for it to convert to json so we can use the response
+
             let data = await response.json();
-            console.log(data);
 
             if (data.status === 'success') {
                 window.location.reload();

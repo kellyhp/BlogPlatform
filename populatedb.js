@@ -1,10 +1,7 @@
-// populatedb.js
-
 const sqlite = require('sqlite');
 const sqlite3 = require('sqlite3');
 
-// Placeholder for the database file name
-const dbFileName = 'your_database_file.db';
+const dbFileName = 'microblog.db';
 
 async function initializeDB() {
     const db = await sqlite.open({ filename: dbFileName, driver: sqlite3.Database });
@@ -25,6 +22,15 @@ async function initializeDB() {
             username TEXT NOT NULL,
             timestamp DATETIME NOT NULL,
             likes INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS likes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            post_id INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (post_id) REFERENCES posts(id),
+            UNIQUE(user_id, post_id)
         );
     `);
 
@@ -58,4 +64,4 @@ async function initializeDB() {
     await db.close();
 }
 
-module.exports = {initializeDB};
+module.exports = { initializeDB };

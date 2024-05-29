@@ -1,10 +1,7 @@
-// showdb.js
-
 const sqlite = require('sqlite');
 const sqlite3 = require('sqlite3');
 
-// Placeholder for the database file name
-const dbFileName = 'your_database_file.db';
+const dbFileName = 'microblog.db';
 
 async function showDatabaseContents() {
     const db = await sqlite.open({ filename: dbFileName, driver: sqlite3.Database });
@@ -45,7 +42,24 @@ async function showDatabaseContents() {
         console.log('Posts table does not exist.');
     }
 
+    // Check if the likes table exists
+    const likesTableExists = await db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name='likes';`);
+    if (likesTableExists) {
+        console.log('Likes table exists.');
+        const likes = await db.all('SELECT * FROM likes');
+        if (likes.length > 0) {
+            console.log('Likes:');
+            likes.forEach(like => {
+                console.log(like);
+            });
+        } else {
+            console.log('No likes found.');
+        }
+    } else {
+        console.log('Likes table does not exist.');
+    }
+
     await db.close();
 }
 
-module.exports = {showDatabaseContents};
+module.exports = { showDatabaseContents };
