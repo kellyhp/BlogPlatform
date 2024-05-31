@@ -604,17 +604,32 @@ function logoutUser(req, res) {
 app.post('/deleteAccount', async (req, res) => {
     try {
         const userId = req.session.userId;
-
         await db.run('BEGIN TRANSACTION');
-        await db.run('DELETE FROM likes WHERE user_id = ?', [userId]);
-        await db.run('DELETE FROM reactions WHERE user_id = ?', [userId]);
+
+        const userLikes = await db.all('SELECT post_id FROM likes WHERE user_id = ?', [userId]);
+        for (const like of userLikes) {
+            await updatePostLikes(like.post_id, userId);
+        }
+
+        const userReactions = await db.all('SELECT post_id, emoji FROM reactions WHERE user_id = ?', [userId]);
+        for (const reaction of userReactions) {
+            await updatePostReactions(reaction.post_id, userId, reaction.emoji);
+        }
 
         const userPosts = await db.all('SELECT id FROM posts WHERE username = (SELECT username FROM users WHERE id = ?)', [userId]);
         const postIds = userPosts.map(post => post.id);
 
         for (const postId of postIds) {
-            await db.run('DELETE FROM reactions WHERE post_id = ?', [postId]);
-            await db.run('DELETE FROM likes WHERE post_id = ?', [postId]);
+            const postReactions = await db.all('SELECT user_id, emoji FROM reactions WHERE post_id = ?', [postId]);
+            for (const reaction of postReactions) {
+                await updatePostReactions(postId, reaction.user_id, reaction.emoji);
+            }
+
+            const postLikes = await db.all('SELECT user_id FROM likes WHERE post_id = ?', [postId]);
+            for (const like of postLikes) {
+                await updatePostLikes(postId, like.user_id);
+            }
+
             await db.run('DELETE FROM posts WHERE id = ?', [postId]);
         }
 
