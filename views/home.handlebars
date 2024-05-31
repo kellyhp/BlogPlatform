@@ -2,38 +2,26 @@
 {{!< main }}
 
 {{! New Post Submission Form }}
-<section class="content-container">
-    <div class="gridItem1 {{#unless loggedIn}}no-width{{/unless}}">
-        {{#if loggedIn}}
-        <!-- show the create post form when logged in -->
-        <section class="post-form">
-            <!-- make a header here -->
-            <h1 class="create-post-header">Create new post!</h1>
-            <form action="/posts" method="POST">
-                <!-- title input field name = "title" -->
-                <!-- text area input field name = "content" -->
-                <div class="create-post-container">
-                    <textarea id="post-title" cols="50" name="title">Title</textarea>
-                    <textarea id="post-content" cols="50" rows="20" name="content">What's on your mind {{user.username}}?</textarea>
-                </div>
-                <div class="button-row">
-                    <button type="button" class="emoji-button" onclick="toggleEmojiPanel()"><i class="fa-regular fa-face-smile"></i></button>
-                    <button type="submit" class="post-button">Post</button>
-                </div>
-            </form>
-
-            <div id="emoji-container" class="emoji-panel">
-                <!-- input field for the emoji search, use oninput="searchEmojis() -->
-                <!-- a div, id = "emoji-grid" -->
-                <textarea id="emoji-search" cols="50" rows="1" name="filter-emojis" oninput="searchEmojis()">search for emojis...</textarea>
-                <div id="emoji-grid"></div>
-            </div>
-        </section>
-        {{/if}}
+<section>
+    <div class="header-blog">
+        <div class="blog-submit">
+          <h1>Your Voice</h1>
+          <p>
+            Welcome to Your Voice, where you can write and post your own blog entries. 
+            Whether you want to tell your story, provide insights, or spark a conversation, 
+            this is your platform to be heard.
+          </p>
+          <a href="/profile">
+            <button>Submit your story</button>
+          </a>
+        </div>
     </div>
 
-    <div class="gridItem2 {{#unless loggedIn}}full-width{{/unless}}">
-        <h1>Recent Posts</h1>
+    <div class="grid-posts">
+        <div class="recent_container">
+          <img src="/images/recent.png" alt="recent icon" class="recent"/>
+          <h2> Most Recent </h2>
+        </div>
         <div class="sort-dropdown">
             <label for="sort">Sort by:</label>
             <select id="sort" onchange="sortPosts()">
@@ -41,70 +29,22 @@
                 <option value="likes">Likes</option>
             </select>
         </div>
-        <section class="posts-list" id="posts-list">
-            <!-- recent posts -->
+        <div class="grid-layout">
             {{#if posts.length}}
-            <ul>
                 {{#each posts}}
-                    {{> post this user=../user}}
+                    <div class="posts-blog">
+                        {{> post this user=../user}}
+                    </div>
                 {{/each}}
-            </ul>
             {{else}}
-                <p> no post for now </p>
+                <p>No posts for now</p>
             {{/if}}
-        </section>
-    </div>
+        </div>
+      </div>
 </section>
 
 {{! JavaScript for Emoji Integration and Sorting }}
 <script>
-let allEmojis = [];  // Global list to hold all emojis
-
-function toggleEmojiPanel() {
-    const container = document.getElementById('emoji-container');
-    const displayStyle = container.style.display;
-
-    if (displayStyle === 'none' || displayStyle === '') {
-        container.style.display = 'block';
-        fetch(`https://emoji-api.com/emojis?access_key=${accessToken}`)
-                .then(res => res.json())
-                .then(data => {
-                    allEmojis = data;
-                    displayEmojis(data);
-                })
-                .catch(error => console.error('Error fetching emojis:', error));
-    } else {
-        container.style.display = 'none';
-    }
-}
-
-function displayEmojis(emojis, limit = 200) {
-    const container = document.getElementById('emoji-grid');
-    container.innerHTML = '';
-    if (Array.isArray(emojis) && emojis.length > 0) {
-        emojis.slice(0, limit).forEach(emoji => {
-            const emojiElement = document.createElement('span');
-            emojiElement.textContent = emoji.character;
-            emojiElement.onclick = () => insertEmoji(emoji.character);
-            container.appendChild(emojiElement);
-        });
-    } else {
-        container.textContent = 'No emojis found. Try a different search!';
-    }
-}
-
-function searchEmojis() {
-    const searchTerm = document.getElementById('emoji-search').value.toLowerCase();
-    const filteredEmojis = allEmojis.filter(emoji => emoji.slug.includes(searchTerm));
-    displayEmojis(filteredEmojis);
-}
-
-function insertEmoji(emoji) {
-    const postcontent = document.getElementById('post-content');
-    postcontent.value += emoji;
-    postcontent.focus();
-}
-
 function sortPosts() {
     const sortValue = document.getElementById('sort').value;
     fetch(`/?sort=${sortValue}`)
@@ -112,8 +52,8 @@ function sortPosts() {
         .then(html => {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-            const newPostsList = doc.getElementById('posts-list').innerHTML;
-            document.getElementById('posts-list').innerHTML = newPostsList;
+            const newPostsList = doc.querySelector('.grid-layout').innerHTML;
+            document.querySelector('.grid-layout').innerHTML = newPostsList;
         })
         .catch(error => console.error('Error fetching sorted posts:', error));
 }

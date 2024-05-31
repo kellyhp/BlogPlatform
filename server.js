@@ -94,6 +94,13 @@ app.engine(
                     return options.fn(this);
                 }
                 return options.inverse(this);
+            },
+            isLoggedInAndNotOwner: function (postUser, options) {
+                let currUser = this.user ? this.user.username : null;
+                if (currUser && postUser !== currUser) {
+                    return options.fn(this);
+                }
+                return options.inverse(this);
             }
         },
     })
@@ -229,9 +236,41 @@ app.post('/delete/:id', isAuthenticated, async (req, res) => {
     }
 });
 
+app.post('/react/:id', isAuthenticated, async (req, res) => {
+    const postID = parseInt(req.params.id);
+    const { emoji } = req.body;
+    const currentUser = await getCurrentUser(req);
+
+    try {
+        const result = await updatePostReactions(postID, currentUser.id, emoji);
+        res.json({
+            status: 'success',
+            action: result.action,
+            reactions: result.reactions
+        });
+    } catch (error) {
+        res.json({
+            status: 'error',
+            message: error.message
+        });
+    }
+});
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Support Functions and Variables
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+async function updatePostReactions(postID, userID, emoji) {
+    const reactionExists = await db.get('SELECT * FROM reactions WHERE post_id = ? AND user_id = ? AND emoji = ?', [postID, userID, emoji]);
+    if (!reactionExists) {
+        await db.run('INSERT INTO reactions (post_id, user_id, emoji, timestamp) VALUES (?, ?, ?, ?)', [postID, userID, emoji, new Date().toISOString()]);
+    } else {
+        await db.run('DELETE FROM reactions WHERE post_id = ? AND user_id = ? AND emoji = ?', [postID, userID, emoji]);
+    }
+
+    const updatedReactions = await db.all('SELECT emoji, COUNT(*) as count FROM reactions WHERE post_id = ? GROUP BY emoji', [postID]);
+    return { action: reactionExists ? 'removed' : 'added', reactions: updatedReactions };
+}
 
 // Function to update post likes
 async function updatePostLikes(postID, userID) {
@@ -270,8 +309,11 @@ async function getPosts(req, sort = 'recency') {
     if (currentUser) {
         const userLikes = await db.all('SELECT post_id FROM likes WHERE user_id = ?', [currentUser.id]);
         const likedPostIds = userLikes.map(like => like.post_id);
+        const postReactions = await db.all('SELECT post_id, emoji, COUNT(*) as count FROM reactions GROUP BY post_id, emoji');
+        
         posts.forEach(post => {
             post.likedByCurrentUser = likedPostIds.includes(post.id);
+            post.reactions = postReactions.filter(reaction => reaction.post_id === post.id);
         });
     }
 
@@ -338,7 +380,7 @@ async function renderProfile(req, res) {
     if (user) {
         // user.posts = posts.filter(post => post.username.toLowerCase() === user.username.toLowerCase());
         let currUser = await db.all('SELECT * FROM posts WHERE LOWER(username) = LOWER(?)', [user.username]);
-        res.render('profile', { user, currUser });
+        res.render('profile', { user, currUser, accessToken });
     } else {
         res.redirect('/login');
     }
@@ -558,3 +600,38 @@ function logoutUser(req, res) {
         }
     });
 }
+
+app.post('/deleteAccount', async (req, res) => {
+    try {
+        const userId = req.session.userId;
+
+        await db.run('BEGIN TRANSACTION');
+        await db.run('DELETE FROM likes WHERE user_id = ?', [userId]);
+        await db.run('DELETE FROM reactions WHERE user_id = ?', [userId]);
+
+        const userPosts = await db.all('SELECT id FROM posts WHERE username = (SELECT username FROM users WHERE id = ?)', [userId]);
+        const postIds = userPosts.map(post => post.id);
+
+        for (const postId of postIds) {
+            await db.run('DELETE FROM reactions WHERE post_id = ?', [postId]);
+            await db.run('DELETE FROM likes WHERE post_id = ?', [postId]);
+            await db.run('DELETE FROM posts WHERE id = ?', [postId]);
+        }
+
+        await db.run('DELETE FROM users WHERE id = ?', [userId]);
+        await db.run('COMMIT');
+
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session:', err);
+                res.status(500).json({ status: 'error', message: 'Failed to delete account' });
+            } else {
+                res.json({ status: 'success' });
+            }
+        });
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        await db.run('ROLLBACK');
+        res.status(500).json({ status: 'error', message: 'Failed to delete account' });
+    }
+});

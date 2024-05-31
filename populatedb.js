@@ -32,6 +32,17 @@ async function initializeDB() {
             FOREIGN KEY (post_id) REFERENCES posts(id),
             UNIQUE(user_id, post_id)
         );
+
+        CREATE TABLE IF NOT EXISTS reactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            post_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            emoji TEXT NOT NULL,
+            timestamp DATETIME NOT NULL,
+            FOREIGN KEY (post_id) REFERENCES posts(id),
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            UNIQUE(post_id, user_id, emoji)
+        );
     `);
 
     // Sample data - Replace these arrays with your own data

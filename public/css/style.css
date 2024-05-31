@@ -19,8 +19,6 @@ header {
     background-color: #F9F4F1;
     color: #C16265;
     box-shadow: 0px 4px 10px;
-    border-bottom-left-radius: 20px;
-    border-bottom-right-radius: 20px;
 }
 
 footer {
@@ -95,21 +93,24 @@ h1 {
 }
 
 #emoji-grid {
-    width: 80%;
+    width: 100%;
 }
 
 .create-post-container {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    padding: 4% 0;
+    width: 100%;
 }
 
 textarea {
     resize: none;
     border: solid 1px rgb(173, 173, 173);
-    border-radius: 10px;
+    border-radius: 14px;
     margin-bottom: 10px;
     font-size: 1rem;
+    font-family: 'Mukta', sans-serif;
     width: 100%;
 }
 
@@ -118,12 +119,32 @@ textarea {
     font-family: "Mukta", sans-serif;
 }
 
+.posts-list ul {
+    display: flex;
+    flex-direction: column;
+}
+.posts-list li {
+    margin-top: 15px;
+}
+
 .content-container {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: center;
-    padding: 30px;
+    gap: 3%;
+    padding: 7% 2%;
+}
+
+.content-container h1 {
+    font-family: "Outfit", sans-serif;
+    display: flex;
+    font-weight: 600;
+    font-size: 24px;
+    color: black;
+}
+
+.content-container p {
+    font-size: 16px;
 }
 
 .gridItem1, .gridItem2 {
@@ -132,8 +153,17 @@ textarea {
     width: 50%;
 }
 
-.no-width {
-    width: 0%;
+.posts-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 700px;
+    overflow-y: scroll;
+    width: 100%;
+}
+
+.spanPosted {
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 15px;
 }
 
 .full-width {
@@ -147,6 +177,8 @@ textarea {
 .posts-list ul {
     display: flex;
     flex-direction: column;
+    padding: 10%;
+    padding-top: 0;
 }
 
 .post, .profile-info{
@@ -156,7 +188,7 @@ textarea {
     background-color: white;
     padding: 20px;
     box-shadow: 0px 4px 5px;
-    width: 100%;
+    width: fit-content;
 }
 
 .login-area, .register-area {
@@ -179,6 +211,7 @@ textarea {
     margin-top: 50px;
     font-size: 1rem;
     cursor: pointer;
+    font-family: "Outfit", sans-serif;
 }
 
 .input-auth {
@@ -198,15 +231,25 @@ textarea {
 .button-row {
     display: flex;
     flex-direction: row;
+    justify-content: end;
     gap: 10px;
 }
 
-.post-button, .emoji-button {
+.post-button, .emoji-button, .delete-account-button {
     background-color: #E9848F;
     border-radius: 20px;
     border: none;
     width: 50%;
     color: white;
+    cursor: pointer;
+    padding: 2% 5%;
+    font-size: 1rem;
+}
+
+.cancel-button, .confirm-button {
+    background-color: #E9848F;
+    border-radius: 20px;
+    border: none;
     cursor: pointer;
     padding: 2% 5%;
     font-size: 1rem;
@@ -219,6 +262,7 @@ textarea {
 #emoji-container {
     display: none;
     margin-top: 20px;
+    width: 100%;
 }
 
 .emoji-button {
@@ -263,12 +307,12 @@ textarea {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 0 10%;
 }
 
 .user-posts ul {
     display: flex;
     flex-direction: column;
+    margin-left: 5%;
 }
 
 .user-posts h2, .not-posted{
@@ -349,6 +393,236 @@ select {
     border-radius: 20px;
 }
 
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+    border-radius: 20px;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.confirm-button {
+    background-color: red;
+    color: white;
+}
+
+.cancel-button {
+    background-color: gray;
+    color: white;
+}
+
+
+.header-blog {
+    background: linear-gradient(#FA8F9A, #FDF8F8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10% 20%;
+    height: 300px;
+}
+
+.blog-submit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 25px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.blog-submit h1 {
+    color: #EC8590;
+    font-weight: 600;
+    font-size: 52px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.blog-submit p {
+    color: #E8848E;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.blog-submit a, .blog-submit button {
+    width: 70%;
+    border-radius: 4px;
+    color: white;
+    font-weight: 800;
+    font-size: 16px;
+    background-color: #FA8F9A;
+    border: none;
+    padding: 2%;
+    cursor: pointer;
+}
+
+.grid-posts {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 5% 10%;
+    background-color: #FDF8F8;
+}
+
+.grid-posts h2 {
+    font-size: 32px;
+}
+
+.grid-layout {
+    font-family: 'Outfit', sans-serif;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.posts-blog {
+    width: fit-content;
+}
+
+.posts-blog ul {
+    width: 100%;
+}
+
+.posts-blog .post {
+    border-radius: 14px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex; 
+    flex-direction: column;
+    gap: 15px;
+    width: fit-content;
+}
+
+.post-blog h3 {
+    font-size: 24px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.post-blog p {
+    font-size: 16px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.recent_container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.recent {
+    width: 41px;
+    height: 41px;
+}
+
+.reactions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+}
+
+.reactions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.reactions-list span, .reaction-button {
+    display: flex;
+    align-items: center;
+    padding: 2px 5px;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.reaction-button {
+    padding: 7px;
+    cursor: pointer;
+}
+
+.emoji-panel {
+    display: none;
+    position: relative;
+    width: 100%;
+    padding: 10px 0px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.emoji-panel-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.emoji-panel textarea {
+    width: 80%;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.emoji-panel button {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.emoji-grids {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-height: 100px;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.emoji-grids span {
+    cursor: pointer;
+    font-size: 24px;
+}
+
 @media(max-width: 782px) {
     header {
         flex-direction: column;
@@ -368,6 +642,10 @@ select {
     .gridItem1, .gridItem2 {
         width: 70%;
     }
+    .grid-layout{
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 @media(max-width: 1024px) {
@@ -384,6 +662,23 @@ select {
         flex-direction: column;
     }
     .post-form form {
+        width: 100%;
+    }
+    .gridItem1, .gridItem2{
+        margin-bottom: 4%;
+        width: 70%;
+    }
+    .posts-list {
+        max-height: fit-content;
+        overflow-y: visible;
+    }
+    .posts-list ul {
+        padding: 0;
+    }
+    .user-posts {
+        padding: 0;
+    }
+    .post, .posts-blog .post {
         width: 100%;
     }
 }
