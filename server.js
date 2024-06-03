@@ -180,11 +180,26 @@ activateServer();
 //
 app.get('/', async (req, res) => {
     const sort = req.query.sort || 'recency';
-    const posts = await getPosts(req, sort);
+    const page = parseInt(req.query.page) || 1; // get what page you're on
+    console.log("page is", page);
+    const posts = await getPosts(req, sort, page);
     const user = await getCurrentUser(req) || {};
-    res.render('home', { posts, user, accessToken });
-});
+    console.log("user is ", user);
 
+    // get total number of entries in database, gets stored as an object
+    const totalCount = await db.get('SELECT COUNT(*) AS count FROM posts');
+    // calculate how many page numbers you should have
+    const totalPages = Math.ceil(totalCount.count / 9);
+
+    const response = {
+        posts: posts,
+        totalPages: totalPages,
+        currentPage: page
+    }
+
+    console.log("response is ", response);
+    res.render('home', { response, accessToken, user });
+});
 // Additional routes that you must implement
 
 app.post('/posts', async (req, res) => {
@@ -289,8 +304,11 @@ async function updatePostLikes(postID, userID) {
 }
 
 // Function to get all posts, sorted by latest first
-async function getPosts(req, sort = 'recency') {
+async function getPosts(req, sort = 'recency', page) {
     let posts;
+    const skip = (page - 1) * 9;
+    const limit = 9;
+    // pagination: added limit (only 9 at a time) and offset
 
     if (sort === 'likes') {
         posts = await db.all(`
@@ -299,9 +317,14 @@ async function getPosts(req, sort = 'recency') {
             LEFT JOIN likes ON posts.id = likes.post_id
             GROUP BY posts.id
             ORDER BY likesCount DESC
-        `);
+            LIMIT ? OFFSET ?
+        `, [limit, skip]);
     } else {
-        posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
+        posts = await db.all(`
+            SELECT * FROM posts 
+            ORDER BY timestamp DESC 
+            LIMIT ? OFFSET ? 
+            `, [limit, skip]);
     }
 
     const currentUser = await getCurrentUser(req);
@@ -309,11 +332,8 @@ async function getPosts(req, sort = 'recency') {
     if (currentUser) {
         const userLikes = await db.all('SELECT post_id FROM likes WHERE user_id = ?', [currentUser.id]);
         const likedPostIds = userLikes.map(like => like.post_id);
-        const postReactions = await db.all('SELECT post_id, emoji, COUNT(*) as count FROM reactions GROUP BY post_id, emoji');
-        
         posts.forEach(post => {
             post.likedByCurrentUser = likedPostIds.includes(post.id);
-            post.reactions = postReactions.filter(reaction => reaction.post_id === post.id);
         });
     }
 

@@ -1,60 +1,150 @@
-{{! Use the main layout }}
-{{!< main }}
+    {{! Use the main layout }}
+    {{!< main }}
 
-{{! New Post Submission Form }}
-<section>
-    <div class="header-blog">
-        <div class="blog-submit">
-          <h1>Your Voice</h1>
-          <p>
-            Welcome to Your Voice, where you can write and post your own blog entries. 
-            Whether you want to tell your story, provide insights, or spark a conversation, 
-            this is your platform to be heard.
-          </p>
-          <a href="/profile">
-            <button>Submit your story</button>
-          </a>
+    {{! New Post Submission Form }}
+    <section>
+        <div class="header-blog">
+            <div class="blog-submit">
+            <h1>Your Voice</h1>
+            <p>
+                Welcome to Your Voice, where you can write and post your own blog entries. 
+                Whether you want to tell your story, provide insights, or spark a conversation, 
+                this is your platform to be heard.
+            </p>
+            <a href="/profile">
+                <button>Submit your story</button>
+            </a>
+            </div>
         </div>
-    </div>
 
-    <div class="grid-posts">
-        <div class="recent_container">
-          <img src="/images/recent.png" alt="recent icon" class="recent"/>
-          <h2> Most Recent </h2>
+        <div class="grid-posts">
+            <div class="recent_container">
+            <img src="/images/recent.png" alt="recent icon" class="recent"/>
+            <h2> Most Recent </h2>
+            </div>
+            <div class="sort-dropdown">
+                <label for="sort">Sort by:</label>
+                <select id="sort" onchange="sortPosts()">
+                    <option value="recency">Recency</option>
+                    <option value="likes">Likes</option>
+                </select>
+            </div>
+            <div class="grid-layout">
+                {{#if response.posts.length}}
+                    {{#each response.posts}}
+                        <div class="posts-blog">
+                            {{> post this user=../user}}
+                        </div>
+                    {{/each}}
+                {{else}}
+                    <p>No posts for now</p>
+                {{/if}}
+            </div>
         </div>
-        <div class="sort-dropdown">
-            <label for="sort">Sort by:</label>
-            <select id="sort" onchange="sortPosts()">
-                <option value="recency">Recency</option>
-                <option value="likes">Likes</option>
-            </select>
-        </div>
-        <div class="grid-layout">
-            {{#if posts.length}}
-                {{#each posts}}
-                    <div class="posts-blog">
-                        {{> post this user=../user}}
-                    </div>
-                {{/each}}
-            {{else}}
-                <p>No posts for now</p>
-            {{/if}}
-        </div>
-      </div>
-</section>
 
-{{! JavaScript for Emoji Integration and Sorting }}
-<script>
-function sortPosts() {
-    const sortValue = document.getElementById('sort').value;
-    fetch(`/?sort=${sortValue}`)
-        .then(response => response.text())
-        .then(html => {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newPostsList = doc.querySelector('.grid-layout').innerHTML;
-            document.querySelector('.grid-layout').innerHTML = newPostsList;
-        })
-        .catch(error => console.error('Error fetching sorted posts:', error));
-}
-</script>
+        <div class="pagination">
+            <ul id="pagination-ul"> 
+                <!-- Dynamically generate the buttons :) -->
+            </ul>
+        </div>
+
+    </section>
+
+    {{! JavaScript for Pagination, Emoji Integration and Sorting }}
+    <script>
+
+    function sortPosts() {
+        const sortValue = document.getElementById('sort').value;
+        fetch(`/?sort=${sortValue}`)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newPostsList = doc.querySelector('.grid-layout').innerHTML;
+                document.querySelector('.grid-layout').innerHTML = newPostsList;
+            })
+            .catch(error => console.error('Error fetching sorted posts:', error));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const pageElement = document.getElementById("pagination-ul")
+    const totalPages = Number({{response.totalPages}});
+    const currentPage = Number({{response.currentPage}});
+
+    console.log("pagination running...");
+    console.log("totalPages is ...", totalPages);
+    console.log("currentPage is ...", currentPage);
+
+    createPagination(totalPages, currentPage); 
+    console.log("pageElement is", pageElement);
+
+
+    function createPagination (totalPages, currentPage) {
+        pageElement.innerHTML = '';
+        const beforePage = currentPage - 1;
+        const afterPage = currentPage + 1;
+
+        // show previous button
+        if (currentPage > 1) {
+            pageElement.innerHTML += `<li class="prevBttn" onclick="handlePageChange(${beforePage})">
+                            <span><i class="fa-solid fa-angle-left"></i>Prev</span></li>`;
+        }
+
+        if(currentPage > 2) {
+            pageElement.innerHTML += `<li class="first_numb" onclick="handlePageChange(${1})">
+                            <span>1</span></li>`;
+        }
+
+        if(currentPage > 3) {
+            pageElement.innerHTML += `<li class="dots"><span>...</span></li>`;
+        }
+
+
+        for (let page_length = beforePage; page_length <= afterPage; page_length++) {
+            if (page_length > totalPages || page_length <= 0) {
+                continue;
+            }
+            let active = (currentPage === page_length) ? 'active' : '';
+            pageElement.innerHTML += `<li class="numb ${active}" onclick="handlePageChange(${page_length})">
+                            <span>${page_length}</span></li>`
+        }
+
+        if (currentPage < totalPages - 1) {
+            if (currentPage < totalPages - 2) {
+                pageElement.innerHTML += `<li class="dots"><span>...</span></li>`;
+            }
+            pageElement.innerHTML += `<li class="last_num" onclick="handlePageChange(${totalPages})">
+                            <span>${totalPages}</span></li>`;
+        }
+
+        if (currentPage < totalPages) {
+            pageElement.innerHTML += `<li class="nextBttn" onclick="handlePageChange(${afterPage})">
+                            <span>Next<i class="fa-solid fa-angle-right"></i></span></li>`;
+        }
+
+    }
+
+    window.handlePageChange = async function (newPage) {
+        console.log("handlePageChange was called");
+        await newPageContent(newPage);
+        createPagination(totalPages, newPage);
+    }
+
+    window.newPageContent = async function (newPage) {
+        fetch(`/?page=${newPage}`)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newPostsList = doc.querySelector('.grid-layout').innerHTML;
+                document.querySelector('.grid-layout').innerHTML = newPostsList;
+                window.scrollTo({
+                    top: 400,
+                    behavior: 'smooth'
+                    });
+            })
+            .catch(error => console.error('Error fetching paginated posts:', error));
+    }
+    });
+
+    </script>
