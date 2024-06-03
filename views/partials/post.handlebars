@@ -24,14 +24,14 @@
         <div class="reactions">
             <div class="reactions-list" id="reactions-list-{{this.id}}">
                 {{#each this.reactions}}
-                <span onclick="toggleReaction({{../this.id}}, '{{this.emoji}}')">{{this.count}} : {{this.emoji}}</span>
+                <span>{{this.count}} : {{this.emoji}}</span>
                 {{/each}}
                 {{#isLoggedInAndNotOwner this.username}}
                 <div onclick="toggleEmojiPanel({{this.id}})" class="fa-solid fa-face-smile reaction-button"></div>
                 {{/isLoggedInAndNotOwner}}
             </div>
             {{#isLoggedInAndNotOwner this.username}}
-            <div id="emoji-panel-{{this.id}}" class="emoji-panel">
+            <div id="emoji-panel-{{this.id}}" class="emoji-panel" style="display: none;">
                 <div class="emoji-panel-header">
                     <textarea id="emoji-search-{{this.id}}" rows="1" oninput="searchEmojis({{this.id}})" placeholder="Search for emojis..."></textarea>
                     <button onclick="closeEmojiPanel({{this.id}})">Close</button>
@@ -93,7 +93,6 @@ async function handleDeleteClick(event) {
         console.error('Error:', error);
     }
 }
-
 async function reactToPost(postId, emoji) {
     try {
         let response = await fetch(`/react/${postId}`, {
@@ -107,36 +106,10 @@ async function reactToPost(postId, emoji) {
         let data = await response.json();
 
         if (data.status === 'success') {
-            updateReactionsList(postId, data.reactions);
-        } else {
-            console.error(data.message);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-function updateReactionsList(postId, reactions) {
-    const reactionsList = document.getElementById(`reactions-list-${postId}`);
-    reactionsList.innerHTML = reactions.map(reaction => `<span onclick="toggleReaction(${postId}, '${reaction.emoji}')">${reaction.count} : ${reaction.emoji}</span>`).join('');
-    const reactionButton = `<div onclick="toggleEmojiPanel(${postId})" class="fa-solid fa-face-smile reaction-button"></div>`;
-    reactionsList.innerHTML += reactionButton;
-}
-
-async function toggleReaction(postId, emoji) {
-    try {
-        let response = await fetch(`/react/${postId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ emoji })
-        });
-
-        let data = await response.json();
-
-        if (data.status === 'success') {
-            updateReactionsList(postId, data.reactions);
+            const reactionsList = document.getElementById(`reactions-list-${postId}`);
+            reactionsList.innerHTML = data.reactions.map(reaction => `<span>${reaction.count} : ${reaction.emoji}</span>`).join('');
+            const reactionButton = `<div onclick="toggleEmojiPanel(${postId})" class="fa-solid fa-face-smile reaction-button"></div>`;
+            reactionsList.innerHTML += reactionButton;
         } else {
             console.error(data.message);
         }
@@ -150,6 +123,7 @@ let allEmojis = [];  // Global list to hold all emojis
 function toggleEmojiPanel(postId) {
     const panel = document.getElementById(`emoji-panel-${postId}`);
     panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+
     if (panel.style.display === 'block' && !panel.dataset.loaded) {
         fetch(`https://emoji-api.com/emojis?access_key=${accessToken}`)
             .then(response => response.json())
