@@ -11,6 +11,19 @@
     </div>
 </div>
 
+<div id="change-username-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Change Username</h2>
+        <form id="change-username-form">
+            <label for="new-username">New Username:</label>
+            <input type="text" id="new-username" name="new-username" value="{{user.username}}">
+            <button type="submit" class="confirm-button">Change Username</button>
+            <p id="username-error" class="error-message"></p>
+        </form>
+    </div>
+</div>
+
 <div class="profile-container">
     <div class="profile-avatar">
         <!-- Display user's profile image -->
@@ -22,7 +35,10 @@
         <h2>User Profile</h2>
         <p> <span class="bold "> Username: </span> {{user.username}}</p>
         <p> <span class="bold"> Member since: </span> {{user.memberSince}}</p>
-        <button id="delete-account-button" class="delete-account-button">Delete Account</button>
+        <div class="username-container">
+            <button id="delete-account-button" class="delete-account-button">Delete Account</button>
+            <button id="change-username-button" class="change-username-button">Change Username</button>
+        </div>
         <!-- Add more profile information as needed -->
     </section>
 </div>
@@ -96,9 +112,15 @@ document.getElementById('delete-account-button').onclick = function() {
     document.getElementById('confirmation-modal').style.display = 'block';
 };
 
-document.querySelector('.close-button').onclick = function() {
-    document.getElementById('confirmation-modal').style.display = 'none';
+document.getElementById('change-username-button').onclick = function() {
+    document.getElementById('change-username-modal').style.display = 'block';
 };
+
+document.querySelectorAll('.close-button').forEach(button => {
+    button.onclick = function() {
+        document.querySelectorAll('.modal').forEach(modal => modal.style.display = 'none');
+    }
+});
 
 document.getElementById('cancel-delete').onclick = function() {
     document.getElementById('confirmation-modal').style.display = 'none';
@@ -125,6 +147,41 @@ document.getElementById('confirm-delete').onclick = async function() {
     }
 };
 
+document.getElementById('change-username-form').onsubmit = async function(event) {
+    event.preventDefault();
+    const newUsername = document.getElementById('new-username').value;
+    const errorElement = document.getElementById('username-error');
+
+    // Client-side validation
+    if (!newUsername || newUsername.trim() === '') {
+        errorElement.textContent = 'Username cannot be empty';
+        return;
+    }
+
+    try {
+        let response = await fetch(`/changeUsername`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ newUsername })
+        });
+
+        let data = await response.json();
+
+        if (data.status === 'success') {
+            document.getElementById('change-username-modal').style.display = 'none';
+            errorElement.textContent = '';
+            window.location.reload();
+        } else {
+            errorElement.textContent = data.error;
+        }
+    } catch (error) {
+        errorElement.textContent = 'Server error';
+        console.error('Error:', error);
+    }
+};
+
 let allEmojis = [];  // Global list to hold all emojis
 
 function toggleEmojiPanel() {
@@ -134,9 +191,9 @@ function toggleEmojiPanel() {
     if (displayStyle === 'none' || displayStyle === '') {
         container.style.display = 'block';
         fetch(`https://emoji-api.com/emojis?access_key=${accessToken}`)
-            .then(res => res.json())
+            .then(response => response.json())
             .then(data => {
-                allEmojis = data;
+                allEmojis = data;  // Store emojis in global list
                 displayEmojis(data);
             })
             .catch(error => console.error('Error fetching emojis:', error));
@@ -145,55 +202,25 @@ function toggleEmojiPanel() {
     }
 }
 
-function displayEmojis(emojis, limit = 200) {
-    const container = document.getElementById('emoji-grid');
-    container.innerHTML = '';
-    if (Array.isArray(emojis) && emojis.length > 0) {
-        emojis.slice(0, limit).forEach(emoji => {
-            const emojiElement = document.createElement('span');
-            emojiElement.textContent = emoji.character;
-            emojiElement.onclick = () => insertEmoji(emoji.character);
-            container.appendChild(emojiElement);
-        });
-    } else {
-        container.textContent = 'No emojis found. Try a different search!';
-    }
+function displayEmojis(emojis) {
+    const grid = document.getElementById('emoji-grid');
+    grid.innerHTML = '';
+
+    emojis.forEach(emoji => {
+        const button = document.createElement('button');
+        button.classList.add('emoji-button');
+        button.textContent = emoji.character;
+        button.onclick = function() {
+            const textArea = document.getElementById('post-content');
+            textArea.value += emoji.character;
+        };
+        grid.appendChild(button);
+    });
 }
 
 function searchEmojis() {
     const searchTerm = document.getElementById('emoji-search').value.toLowerCase();
-    const filteredEmojis = allEmojis.filter(emoji => emoji.slug.includes(searchTerm));
+    const filteredEmojis = allEmojis.filter(emoji => emoji.unicodeName.toLowerCase().includes(searchTerm));
     displayEmojis(filteredEmojis);
-}
-
-function insertEmoji(emoji) {
-    const postcontent = document.getElementById('post-content');
-    postcontent.value += emoji;
-    postcontent.focus();
-}
-
-async function handleDeleteClick(event) {
-    const buttonElement = event.target.closest('.delete-button');
-    const postId = buttonElement.getAttribute('data-id');
-
-    try {
-        let response = await fetch(`/delete/${postId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ postId: postId })
-        });
-
-        let data = await response.json();
-
-        if (data.status === 'success') {
-            window.location.reload();
-        } else {
-            console.error('Failed to delete post');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
 }
 </script>

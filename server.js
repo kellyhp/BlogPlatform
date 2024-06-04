@@ -394,6 +394,34 @@ app.get('/profile', isAuthenticated, async (req, res) => {
     renderProfile(req, res);
 });
 
+// Change username
+app.post('/changeUsername', isAuthenticated, async (req, res) => {
+    const { newUsername } = req.body;
+    const userId = req.session.userId;
+    if (!newUsername || newUsername.trim() === '') {
+        return res.status(400).json({ error: 'Username cannot be empty' });
+    }
+
+    try {
+        const currentUser = await db.get('SELECT username FROM users WHERE id = ?', [userId]);
+        if (currentUser.username === newUsername) {
+            return res.status(400).json({ error: 'New username cannot be the same as the current username' });
+        }
+
+        const existingUser = await db.get('SELECT * FROM users WHERE username = ?', [newUsername]);
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already taken' });
+        }
+
+        await db.run('UPDATE users SET username = ? WHERE id = ?', [newUsername, userId]);
+
+        req.session.passport.user.username = newUsername;
+        res.json({ status: 'success', username: newUsername });
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // Function to render the profile page
 async function renderProfile(req, res) {
     const user = await getCurrentUser(req);
@@ -431,7 +459,7 @@ function generateAvatar(letter, width = 100, height = 100) {
     // 5. Return the avatar as a PNG buffer
     
     const colors = ['#94B9AF', '#90A583', '#9D8420', '#942911', '#593837'];
-    const colorIndex = letter.charCodeAt(0) % colors.length;
+    const colorIndex = (letter.charCodeAt(0) + letter.charCodeAt(0) % colors.length) % colors.length;
     const backgroundColor = colors[colorIndex];
 
     const canvas = createCanvas(width, height);
@@ -620,53 +648,3 @@ function logoutUser(req, res) {
         }
     });
 }
-
-app.post('/deleteAccount', async (req, res) => {
-    try {
-        const userId = req.session.userId;
-        await db.run('BEGIN TRANSACTION');
-
-        const userLikes = await db.all('SELECT post_id FROM likes WHERE user_id = ?', [userId]);
-        for (const like of userLikes) {
-            await updatePostLikes(like.post_id, userId);
-        }
-
-        const userReactions = await db.all('SELECT post_id, emoji FROM reactions WHERE user_id = ?', [userId]);
-        for (const reaction of userReactions) {
-            await updatePostReactions(reaction.post_id, userId, reaction.emoji);
-        }
-
-        const userPosts = await db.all('SELECT id FROM posts WHERE username = (SELECT username FROM users WHERE id = ?)', [userId]);
-        const postIds = userPosts.map(post => post.id);
-
-        for (const postId of postIds) {
-            const postReactions = await db.all('SELECT user_id, emoji FROM reactions WHERE post_id = ?', [postId]);
-            for (const reaction of postReactions) {
-                await updatePostReactions(postId, reaction.user_id, reaction.emoji);
-            }
-
-            const postLikes = await db.all('SELECT user_id FROM likes WHERE post_id = ?', [postId]);
-            for (const like of postLikes) {
-                await updatePostLikes(postId, like.user_id);
-            }
-
-            await db.run('DELETE FROM posts WHERE id = ?', [postId]);
-        }
-
-        await db.run('DELETE FROM users WHERE id = ?', [userId]);
-        await db.run('COMMIT');
-
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('Error destroying session:', err);
-                res.status(500).json({ status: 'error', message: 'Failed to delete account' });
-            } else {
-                res.json({ status: 'success' });
-            }
-        });
-    } catch (error) {
-        console.error('Error deleting account:', error);
-        await db.run('ROLLBACK');
-        res.status(500).json({ status: 'error', message: 'Failed to delete account' });
-    }
-});
