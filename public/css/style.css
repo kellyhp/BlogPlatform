@@ -652,7 +652,6 @@ select {
     justify-content: center;
     align-items: center;
     width: 100%;
-    background-color: #FDF8F8;
 }
 
 .pagination ul{
@@ -664,7 +663,9 @@ select {
     padding: 8px;
 }
 .pagination ul li{
+    background-color: white;
     color: #E8848E;
+    border: 3px solid #dbdbdb;
     list-style: none;
     line-height: 45px;
     text-align: center;
@@ -680,10 +681,11 @@ select {
     width: 45px;
     margin: 0 0px;
     line-height: 45px;
-    border-radius: 50%;
+    border-radius: 20%;
 }
 .prevBttn, .nextBttn {
-    border-radius: 50%;
+    border-radius: 20%;
+    padding: 0px 5px 0px 5px;
 }
 .pagination ul li.numb.first{
     margin: 0px 3px 0 -5px;
@@ -703,8 +705,7 @@ select {
 .pagination ul li.numb:hover,
 .pagination ul li:first-child:hover,
 .pagination ul li:last-child:hover{
-    color: #fff;
-    background: #E8848E;
+    border: 3px solid #E8848E;
 }
 
 @media(max-width: 782px) {
