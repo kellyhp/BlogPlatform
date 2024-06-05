@@ -675,7 +675,7 @@ select {
     user-select: none;
     transition: all 0.3s ease;
 }
-.pagination ul li.numb{
+.pagination ul li.numb, .pagination ul li.first_num, .pagination ul li.last_num{
     list-style: none;
     height: 45px;
     width: 45px;
@@ -683,14 +683,14 @@ select {
     line-height: 45px;
     border-radius: 20%;
 }
-.prevBttn, .nextBttn {
+.prevBttn, .nextBttn{
     border-radius: 20%;
     padding: 0px 5px 0px 5px;
 }
-.pagination ul li.numb.first{
+.pagination ul li.first_num{
     margin: 0px 3px 0 -5px;
 }
-.pagination ul li.numb.last{
+.pagination ul li.last_num{
     margin: 0px -5px 0 3px;
 }
 .pagination ul li.dots{
@@ -704,7 +704,9 @@ select {
 .pagination li.active,
 .pagination ul li.numb:hover,
 .pagination ul li:first-child:hover,
-.pagination ul li:last-child:hover{
+.pagination ul li:last-child:hover,
+.pagination ul li.first_num:hover, 
+.pagination ul li.last_num:hover{
     border: 3px solid #E8848E;
 }
 

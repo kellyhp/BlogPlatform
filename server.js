@@ -601,7 +601,8 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/registerUsername', (req, res) => {
-    res.render('registerUsername', { loginError: req.query.error });
+    const error = req.query.error;
+    res.render('registerUsername', { regError: error });
 });
 
 app.get('/google', passport.authenticate('google', {
@@ -646,6 +647,7 @@ async function loginUser(username) {
 // Function to find a user by username
 async function findUserByUsername(matchUser) {
     // return users.find(user => user.username.toLowerCase() === username.toLowerCase());
+    console.log("matchUser is", matchUser);
     try {
             gotUser = await db.get('SELECT * FROM users WHERE LOWER(username) = LOWER(?)', [matchUser]);
             return gotUser;
