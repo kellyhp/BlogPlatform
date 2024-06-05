@@ -434,6 +434,56 @@ async function renderProfile(req, res) {
     }
 }
 
+app.post('/deleteAccount', async (req, res) => {
+     try {
+         const userId = req.session.userId;
+         await db.run('BEGIN TRANSACTION');
+
+         const userLikes = await db.all('SELECT post_id FROM likes WHERE user_id = ?', [userId]);
+         for (const like of userLikes) {
+             await updatePostLikes(like.post_id, userId);
+         }
+
+         const userReactions = await db.all('SELECT post_id, emoji FROM reactions WHERE user_id = ?', [userId]);
+         for (const reaction of userReactions) {
+             await updatePostReactions(reaction.post_id, userId, reaction.emoji);
+         }
+
+         const userPosts = await db.all('SELECT id FROM posts WHERE username = (SELECT username FROM users WHERE id = ?)', [userId]);
+         const postIds = userPosts.map(post => post.id);
+
+         for (const postId of postIds) {
+             const postReactions = await db.all('SELECT user_id, emoji FROM reactions WHERE post_id = ?', [postId]);
+             for (const reaction of postReactions) {
+                 await updatePostReactions(postId, reaction.user_id, reaction.emoji);
+             }
+
+             const postLikes = await db.all('SELECT user_id FROM likes WHERE post_id = ?', [postId]);
+             for (const like of postLikes) {
+                 await updatePostLikes(postId, like.user_id);
+             }
+
+             await db.run('DELETE FROM posts WHERE id = ?', [postId]);
+         }
+
+         await db.run('DELETE FROM users WHERE id = ?', [userId]);
+         await db.run('COMMIT');
+
+         req.session.destroy((err) => {
+             if (err) {
+                 console.error('Error destroying session:', err);
+                 res.status(500).json({ status: 'error', message: 'Failed to delete account' });
+             } else {
+                 res.json({ status: 'success' });
+             }
+         });
+     } catch (error) {
+         console.error('Error deleting account:', error);
+         await db.run('ROLLBACK');
+         res.status(500).json({ status: 'error', message: 'Failed to delete account' });
+     }
+ }); 
+
 app.get('/avatar/:username', (req, res) => {
     // TODO: Serve the avatar image for the user
     handleAvatar(req, res);
@@ -497,13 +547,15 @@ function isAuthenticated(req, res, next) {
 
 app.post('/registerUsername', async (req, res) => {
     let username = req.body.username;
-    let googleID = req.body.googleID;
+    let googleID = req.session.hashedGoogleID;
     try {
         // TODO: Register a new user
-        const newUser = await registerUser(username, googleID);
+        const user = await registerUser(username, googleID);
         console.log('New user registered');
         console.log("redirecting");
-        res.redirect('/login');
+        req.session.loggedIn = true;
+        req.session.userId = user.id;
+        res.redirect('/');
     } catch (error) {
         console.error('Error registering user:', error.message);
         res.redirect('/registerUsername?error=' + encodeURIComponent(error.message));
@@ -521,7 +573,6 @@ async function registerUser(username, googleID) {
 // Function to add a new user
 async function addUser(username, googleID) {
     // TODO: Create a new user object and add to users array
-    console.log("google id is", googleID);
     const userInfo = {
         username: username,
         avatar_url: '', // default for now
@@ -532,7 +583,8 @@ async function addUser(username, googleID) {
     try {
         let query = 'INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince) VALUES (?, ?, ?, ?)'
         let newUser = await db.run(query, [userInfo.username, userInfo.hashedGoogleId, userInfo.avatar_url, userInfo.memberSince]);
-        console.log('new user successfully added');
+        newUser = await db.get('SELECT * FROM users WHERE hashedGoogleId = ?', googleID);
+        console.log('new user successfully added', newUser);
         return newUser; 
     }
     catch (error) {
@@ -548,23 +600,6 @@ app.get('/login', (req, res) => {
     res.render('loginRegister', { loginError: req.query.error });
 });
 
-/* app.post('/login', async (req, res) => {
-    // TODO: Login a user
-    console.log("recevied post request");
-    const { username } = req.body;
-    console.log("Received username: ", username);
-    try {
-        const user = await loginUser(username);
-        console.log('User logged in:', user);
-        req.session.loggedIn = true;
-        req.session.userId = user.id;
-        res.redirect('/');
-    } catch (error) {
-        console.error('Error logging in user:', error.message);
-        res.redirect('/login?error=' + encodeURIComponent(error.message));
-    }
-}); */
-
 app.get('/registerUsername', (req, res) => {
     res.render('registerUsername', { loginError: req.query.error });
 });
@@ -577,6 +612,7 @@ app.get('/google', passport.authenticate('google', {
 app.get('/auth/google/callback', passport.authenticate('google'), async (req, res) => {
     let googleID = req.user.id;
     googleID = crypto.createHash('sha256').update(googleID).digest('hex');
+    req.session.hashedGoogleID = googleID;
     //  if their googleid already exists in the database, just go to home
     // otherwise prompt them to make a new username
     let checkFirstTime = await db.get('SELECT * FROM users WHERE hashedGoogleId = ?', [googleID]);
@@ -586,9 +622,7 @@ app.get('/auth/google/callback', passport.authenticate('google'), async (req, re
         // logging in (basically the original login code, but looking up username via the googleID)
         // maybe one day i'll make this a function...
         try {
-            let findUser = await db.get('SELECT * FROM users WHERE hashedGoogleId = ?', [googleID]);
-            findUser = findUser.username;
-            const user = await loginUser(findUser);
+            const user = await loginUser(checkFirstTime.username);
             req.session.loggedIn = true;
             req.session.userId = user.id;
             res.redirect('/');
@@ -602,7 +636,6 @@ app.get('/auth/google/callback', passport.authenticate('google'), async (req, re
 // Function to login a user
 async function loginUser(username) {
     const user = await findUserByUsername(username);
-    console.log('user is: ', user);
     if (user) {
         return user;
     } else {
