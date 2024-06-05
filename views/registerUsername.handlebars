@@ -9,7 +9,7 @@
             {{/if}}
         <form action="/registerUsername" method="POST">
             <label for="regUsername">Username:</label><br>
-            <input class="input-auth"  type="text" id="regUsername" name="username"><br>
+            <input class="input-auth"  type="text" id="regUsername" name="username" required><br>
             <input type="hidden" name="googleID" value="{{googleID}}">
             <button class="button-auth" type="submit">Register</button>
             </form>

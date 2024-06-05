@@ -47,13 +47,13 @@ async function initializeDB() {
 
     // Sample data - Replace these arrays with your own data
     const users = [
-        { username: 'user1', hashedGoogleId: 'hashedGoogleId1', avatar_url: '', memberSince: '2024-01-01 12:00:00' },
-        { username: 'user2', hashedGoogleId: 'hashedGoogleId2', avatar_url: '', memberSince: '2024-01-02 12:00:00' }
+        { username: 'Josefina', hashedGoogleId: 'hashedGoogleId1', avatar_url: '', memberSince: '2024-01-01 12:00:00' },
+        { username: 'Mia', hashedGoogleId: 'hashedGoogleId2', avatar_url: '', memberSince: '2024-01-02 12:00:00' }
     ];
 
     const posts = [
-        { title: 'First Post', content: 'This is the first post', username: 'user1', timestamp: '2024-01-01 12:30:00', likes: 0 },
-        { title: 'Second Post', content: 'This is the second post', username: 'user2', timestamp: '2024-01-02 12:30:00', likes: 0 }
+        { title: 'STEM', content: 'The fields of science, technology, engineering, and mathematics (STEM) have traditionally been male-dominated. However, women are making significant inroads and changing the landscape of these critical fields.', username: 'user1', timestamp: '2024-06-04T04:44:18.973Z', likes: 0 },
+        { title: 'Helping women', content: ' By promoting financial literacy and supporting female entrepreneurs, we can help women build a secure and prosperous future.', username: 'user2', timestamp: '2024-06-04T04:44:18.973Z', likes: 0 }
     ];
 
     // Insert sample data into the database

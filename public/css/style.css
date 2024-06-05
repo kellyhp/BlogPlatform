@@ -47,6 +47,11 @@ a {
     cursor: pointer;
 }
 
+.header-logo {
+    width: 10%;
+    height: 10%;
+}
+
 ul {
     list-style-type: none;
     padding-inline-start: 0px !important;
@@ -673,8 +678,11 @@ select {
     list-style: none;
     height: 45px;
     width: 45px;
-    margin: 0 3px;
+    margin: 0 0px;
     line-height: 45px;
+    border-radius: 50%;
+}
+.prevBttn, .nextBttn {
     border-radius: 50%;
 }
 .pagination ul li.numb.first{
